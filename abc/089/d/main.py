@@ -3,11 +3,11 @@ import math
 
 if __name__ == "__main__":
 	H, W, D = list(map(int, input().split()))
-	masu_d = {}
+	masu = {}
 	for i in range(H):
 		inputs = list(map(int, input().split()))
 		for j in range(W):
-			masu_d[inputs[j]] = [i, j]
+			masu[inputs[j]] = [i, j]
 
 	Q = int(input())
 	L = []
@@ -16,11 +16,10 @@ if __name__ == "__main__":
 		l, r = list(map(int, input().split()))
 		L.append(l)
 		R.append(r)
-	# 総和計算開始
+	# i=D+1 ~ H*W の累積和Sを求める
+	S = [0] * (H*W+1)
+	for i in range(D+1, H*W+1):
+		S[i] = S[i-D] + abs(masu[i][0]-masu[i-D][0]) + abs(masu[i][1]-masu[i-D][1])
+	# 回答する
 	for i in range(Q):
-		ans = 0
-		if L[i] == R[i]:
-			print(int(ans))
-			continue
-		ans += math.fabs(masu_d[L[i]][0]-masu_d[R[i]][0]) + math.fabs(masu_d[L[i]][1]-masu_d[R[i]][1])
-		print(int(ans))
+		print(S[R[i]] - S[L[i]])
