@@ -3,15 +3,15 @@ import math
 
 def solve(X):
 	ans = X
-	# b^p = ans‚Æ‚È‚éans‚ğ’T‚·
+	# b^p = ansï¿½Æ‚È‚ï¿½ansï¿½ï¿½ï¿½Tï¿½ï¿½
 	for b in range(2, X):
-		p = math.log(ans, b) # ¸“x‚Å€‚Ê(log(100, 10)‚È‚Ç)
+		p = math.log(ans, b) # ï¿½ï¿½ï¿½xï¿½Åï¿½ï¿½ï¿½(log(100, 10)ï¿½È‚ï¿½)
 		if float.is_integer(p):
 			return ans
 	return 1
 
 def solve2(X):
-	# ‘S’Tõ
+	# ï¿½Sï¿½Tï¿½ï¿½
 	for x in range(X, 1, -1):
 		for p in range(2, x):
 			for b in range(2, x):
