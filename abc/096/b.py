@@ -3,6 +3,7 @@ import math
 
 def solve(X):
 	ans = X
+<<<<<<< HEAD
 	# b^p = ans‚Æ‚È‚éans‚ð’T‚·
 	for b in range(2, X):
 		p = math.log(ans, b) # ¸“x‚ÅŽ€‚Ê(log(100, 10)‚È‚Ç)
