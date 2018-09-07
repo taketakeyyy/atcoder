@@ -1,0 +1,12 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+zehnpaard	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^def zehnpaard():$/;"	function	line:3
+Counter	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^    from collections import Counter$/;"	namespace	line:4
+main	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^def main():$/;"	function	line:10
+collections	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^    import collections$/;"	namespace	line:15
+main2	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^def main2():$/;"	function	line:30
+collections	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^    import collections$/;"	namespace	line:34

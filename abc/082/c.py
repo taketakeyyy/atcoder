@@ -1,5 +1,15 @@
 # -*- coding:utf-8 -*-
 
+def zehnpaard():
+    from collections import Counter
+
+    _ = input()
+    xs = [int(x) for x in input().split()]
+    c = Counter(xs)
+
+    print(sum(v*(k > v) + max(v - k, 0) for k, v in c.items()))
+
+
 def main():
     # TLE
     N = int(input())
