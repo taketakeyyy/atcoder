@@ -4,9 +4,7 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
-zehnpaard	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^def zehnpaard():$/;"	function	line:3
-Counter	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^    from collections import Counter$/;"	namespace	line:4
-main	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^def main():$/;"	function	line:10
-collections	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^    import collections$/;"	namespace	line:15
-main2	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^def main2():$/;"	function	line:30
-collections	C:\Users\takesue\workspace\atcoder\abc\081\c.py	/^    import collections$/;"	namespace	line:34
+N	C:\Users\takesue\workspace\atcoder\abc\080\c.py	/^    N = int(input())$/;"	variable	line:3
+Fs	C:\Users\takesue\workspace\atcoder\abc\080\c.py	/^    Fs = [0]$/;"	variable	line:4
+Ps	C:\Users\takesue\workspace\atcoder\abc\080\c.py	/^    Ps = [0]$/;"	variable	line:5
+ans	C:\Users\takesue\workspace\atcoder\abc\080\c.py	/^    ans = 0$/;"	variable	line:12
