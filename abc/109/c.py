@@ -2,6 +2,7 @@
 import itertools
 
 def main():
+    """RE"""
     N, X = list(map(int, input().split()))
     xs = list(map(int, input().split()))
 
@@ -39,6 +40,7 @@ def main():
 
 
 def main2():
+    """RE"""
     def gcd(*numbers):
         return reduce(math.gcd, numbers)
 
@@ -57,6 +59,7 @@ def main2():
     print(gcd(*diffs))
 
 def main3():
+    """RE"""
     def gcd(*numbers):
         return reduce(math.gcd, numbers)
 
@@ -76,6 +79,23 @@ def main3():
         diffs.append(xs[i+1] - xs[i])
     print(gcd(*diffs))
 
+def main4():
+    import fractions
+    N, X = list(map(int, input().split()))
+    xs = list(map(int, input().split()))
+
+    diffs = []
+    for x in xs:
+        diffs.append(abs(X-x))
+
+    if len(diffs) == 1:
+        print(diffs[0])
+        exit()
+
+    ans = 10**9+1
+    for i in range(len(diffs)-1):
+        ans = min(fractions.gcd(diffs[i], diffs[i+1]), ans)
+    print(ans)
 
 if __name__ == "__main__":
-    main3()
+    main4()
