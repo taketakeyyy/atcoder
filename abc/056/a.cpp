@@ -3,9 +3,10 @@
 
 using namespace std;
 
-main(int argc, char const *argv[])
+int main(int argc, char const *argv[])
 {
     char a, b;
+    scanf("%c %c",&a, &b);
     if(a=='H'){
         if(b=='H'){
             printf("H\n");
