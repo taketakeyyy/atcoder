@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}",
+                "C:\\MinGW\\TDM-GCC-32.5.1\\include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compileCommands": "",
+            "windowsSdkVersion": "8.1",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "msvc-x64",
+            "compilerPath": "C:\\MinGW\\TDM-GCC-32.5.1\\bin\\gcc.exe"
+        }
+    ],
+    "version": 4
+}
