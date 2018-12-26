@@ -23,35 +23,16 @@ string replace_with_str(string str, string str_from, string str_to) {
     return str;
 }
 
-
 void solve(){
-    #define BIG_NUM 1000000001
-    int N, M;
-    cin >> N >> M;
+    int N, t;
+    cin >> N;
 
-    vector<vector<long>> prefectures(N+1, vector<long>(0));
-    map<long, int> mp;
-
-    for(int i=1; i<=M; i++){
-        long P, Y;
-        cin >> P >> Y;
-        prefectures[P].push_back(Y);
-        mp[Y] = i;
+    int t_min = 9999999;
+    for(int i=0; i<N; i++){
+        cin >> t;
+        t_min = min(t_min, t);
     }
-
-    vector<int> ans(M+1, 0);
-    vector<int> shi_ans(M+1, 0);
-    for(int i=1; i<=N; i++){
-        stable_sort(prefectures[i].begin(), prefectures[i].end());
-
-        for(int j=0; j<prefectures[i].size(); j++){
-            ans[mp[prefectures[i][j]]] = j+1;
-        }
-    }
-
-    for(int i=1; i<=M; i++){
-        printf("%06d%06d\n", shi_ans[i], ans[i]);
-
+    cout << t_min << endl;
 }
 
 int main(int argc, char const *argv[]){
