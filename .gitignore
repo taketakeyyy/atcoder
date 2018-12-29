@@ -1,2 +1,4 @@
 # Ignore following files
 .tags1
+.vscode
+.vs
