@@ -1,32 +1,29 @@
 # -*- coding:utf-8 -*-
 
-def make_list(N, n):
-	lists = []
-	a = n
-	while True:
-		if N >= a:
-			lists.append(a)
-			a *= n
-			continue
-		break
-	return lists
+def solve():
+	N = int(input())
+	INF = 100000
 
-def solve(N):
-	#1, 6, 9
-	nines = make_list(N, 9)
-	sixs  = make_list(N, 6)
-	nums  = sixs + nines
-	nums.sort(reverse=True)
+	# dp[N] := N円にするのに必要な枚数の最小値
+	dp = [INF] * (N+10)
+	dp[0] = 0
+	for n in range(1, N+1):
+		# 1円使うとき
+		dp[n] = min(dp[n], dp[n-1]+1)
 
-	rest  = N
-	count = 0
-	for n in nums:
-		if rest >= n:
-			print("{} * {}回 = {}".format(n, rest//n, rest))
-			count += rest//n
-			rest   = rest%n
-	print(count+rest)
+		power = 6
+		while (power <= n):
+			dp[n] = min(dp[n], dp[n-power]+1)
+			power *= 6
+		
+		power = 9
+		while (power <= n):
+			dp[n] = min(dp[n], dp[n-power]+1)
+			power *= 9
+	
+	print(dp[N])
+
+
 
 if __name__ == "__main__":
-	N = int(input())
-	solve(N)
+	solve()
