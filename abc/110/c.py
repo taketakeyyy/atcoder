@@ -20,6 +20,7 @@ def solve():
     if diff == 0:
         print("Yes")
         return
+
     pre_diff = diff
 
     while True:
@@ -40,17 +41,14 @@ def solve():
         # 差を計算する
         diff = calc(S, T)
         if diff == 0:
-            break
+            print("Yes")
+            return
         elif diff < pre_diff:
             pre_diff = diff
             continue
         else:
             print("No")
             return
-    print("Yes")
-
-
-
 
 
 if __name__ == "__main__":
