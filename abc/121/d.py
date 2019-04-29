@@ -1,5 +1,63 @@
 # -*- coding:utf-8 -*-
 
+def solve2():
+    """解説PDF
+    任意の偶数nについて n ^ (n+1) = 1
+
+    この性質は、最下位ビットのみが異なることからわかる。
+
+    たとえば、
+    F(0, 6) = 0^1^2^3^4^5^6
+            = (0^1)^(2^3)^(4^5)^6
+            = 1^1^1^6
+    のように計算できる。
+
+    また、排他的論理和の性質として、
+
+    a ^ b = c
+    a = c ^ b
+
+    が成り立つので、（両辺に ^b するイメージ。b^b=0 である）
+
+    F(0, B) = F(0, A-1) ^ F(A, B)
+    F(A, B) = F(0, A-1) ^ F(0, B)
+
+    が成り立つ。
+    """
+    A, B = list(map(int, input().split()))
+
+    def calc(a):
+        """ F(0, a)を返す。計算量O(1) """
+        if a == 0:
+            return 0
+        elif a == 1:
+            return 1
+
+        # aが2以上の時 
+        if a%2 == 0:
+            # aが偶数のとき
+            # F(0, a) = 1^1^...^1^a
+            # 1の数は a/2 個
+            if (a/2)%2 == 0:
+                _ans = a
+            else:
+                _ans = 1^a
+        else:
+            # aが奇数の時
+            # F(0, a) = 1^1^...^1^1
+            # 1の数は (a+1)/2 個
+            if ((a+1)/2)%2 == 0:
+                _ans = 0
+            else:
+                _ans = 1
+        
+        return _ans
+    
+    # F(A, B) = F(0, A-1) ^ F(0, B)
+    ans = calc(A-1) ^ calc(B)
+    print(ans)
+
+
 def solve():
     A, B = list(map(int, input().split()))
 
@@ -33,6 +91,7 @@ def solve():
     """
 
     def calc(a):
+        """ F(0, a)を返す。 計算量O(log(B))? """
         # 10**3 <= 2**10 は
         # 1000  <= 1024 なので
         # 10**12 <= 2**40 (2進数で40桁くらい)
@@ -62,4 +121,4 @@ def solve():
     print(ans)
 
 if __name__ == "__main__":
-    solve()
+    solve2()
