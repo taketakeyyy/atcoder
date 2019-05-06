@@ -24,7 +24,6 @@ dp[i] := i本使うときの桁数のmax
 dp[i] := max(dp[i-f(Aj)]+1 | j=1~M)
 
 """
-from operator import attrgetter
 
 def num2match(x):
     # 1,2,3,4,5,6,7,8,9を 1つ作るには、それぞれちょうど 2,5,5,4,5,6,3,7,6本のマッチを使う
@@ -61,18 +60,27 @@ def solve():
         tmp = 0
         for a in A:
             if i-num2match(a) >= 0:
-                tmp = max(tmp, dp[i-num2match(a)] + 1)
+                tmp = max(tmp, dp[i-num2match(a)] + 1)                
         dp[i] = tmp
+    print(dp)
     
     ans = ""
     remain = dp[N] # 残りの桁数
     match = N # 残りのマッチ本数
     while(match > 0):
         for i in range(M-1, -1, -1):
-            if dp[match-num2match(A[i])] == remain-1:
-                ans += str(A[i])
-                match -= num2match(A[i])
-                remain -= 1
+            if dp[match-num2match(A[i])] != 0:
+                if dp[match-num2match(A[i])] == remain-1:
+                    ans += str(A[i])
+                    match -= num2match(A[i])
+                    remain -= 1
+                    break
+            else:
+                if match-num2match(A[i]) == 0:
+                    ans += str(A[i])
+                    match -= num2match(A[i])
+                    remain -= 1
+                    break
     print(ans)
 
     
