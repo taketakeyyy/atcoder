@@ -1,4 +1,8 @@
 # -*- coding:utf-8 -*-
+"""
+問題
+https://atcoder.jp/contests/dp/tasks/dp_a
+"""
 
 def solve():
     """ DP """
