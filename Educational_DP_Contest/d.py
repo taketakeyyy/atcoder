@@ -8,6 +8,10 @@ https://qiita.com/drken/items/dc53c683d6de8aeacf5a#d-%E5%95%8F%E9%A1%8C---knapsa
 """
 
 def solve():
+    """
+    Python: TLE (´･_･`)
+    PyPy: AC (´◡`)
+    """
     N, LIMIT = list(map(int, input().split()))
     W, V = [None], [None]
     for i in range(N):
