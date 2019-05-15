@@ -1,27 +1,24 @@
 # -*- coding:utf-8 -*-
 
 """解説
+http://drken1215.hatenablog.com/entry/2019/05/12/004500
+
 N//m = N%m = k （kは約数。かつ余り）とすると、
 
-N = mk + k ...(1)
+N = mk + k
 N = k(m+1)
 
-mを消すためにmに関する式に変形すると、
-N = mk + k
-mk = N-k
-m = (N-k)/k
-  = N/k - 1
+k は MOD m の余りなので、m > k である。
+よって、
 
-(1)に代入して
+N = k*(m+1) > k*k
 
+よって、
 
+N > k**2
+√N > k
 
-これに気づけばOK。あとは全探索。O(√N)
-
-mは、Nの約数で-1したもの。
-
-Nの約数は、高々O(√N)個くらい（なんで？）
-
+これに気づけばOK。あとはkについて全探索。O(√N)
 
 
 (例)
@@ -40,10 +37,15 @@ def solve():
     N = int(input())
 
     ans = 0
-    for i in range(1, math.ceil(N**0.5)):
-        if N%i==0 and i < (N//i-1):
-            ans += N//i - 1
-    print(ans)
+    for k in range(1, math.floor(math.sqrt(N))+1):
+        if N%k != 0: continue # kはNの約数より
+        # N = k(m+1)
+        # m = (N/k) - 1
+        m = (N/k) - 1
+        if m <= 0: continue
+        if N//m == N%m:
+            ans += m
+    print(int(ans))
 
 
 if __name__ == "__main__":
