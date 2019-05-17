@@ -14,7 +14,7 @@ from functools import reduce
 
 def lcm(a, b):
     """ aとbの最小公倍数を返す """
-    return a*b/gcd(a, b)
+    return a*b // gcd(a, b)
 
 def solve():
     N = int(input())
