@@ -5,6 +5,7 @@ def calc_cost():
 
 def solve():
     N, M, K = list(map(int, input().split()))
+    MOD = 10**9 + 7
 
 
 if __name__ == "__main__":
