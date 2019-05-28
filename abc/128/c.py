@@ -14,6 +14,7 @@ def solve():
 
     ans = 0
     for pettern in petterns:
+        for i in range(m)
 
 
 
