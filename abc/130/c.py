@@ -1,41 +1,21 @@
 # -*- coding:utf-8 -*-
 """考え方
-よくわからんけど、縦か横の直線で分割する？
-あと原点から(x,y)座標へ向けて斜めに分割する奴も考える
+(x, y)と長方形の中心を両方通るような直線で分割すると、大きくない方の面積は全体の半分の面積。
 
+・与えられた(x, y)が長方形の中心の場合、区切り方は無限にある。
+・与えられた(x, y)が長方形の中心でない場合、一通りに求まる。
 """
 def solve():
     W, H, x, y = list(map(int, input().split()))
 
-    # 縦に分割する場合
-    ans1 = min(x*H, (W-x)*H)
+    ans_area = W*H/2
 
-    # 横に分割する場合
-    ans2 = min(W*y, W*(H-y))
-
-    # 斜めに分割する場合
-    ans3 = -1
-    if x != 0 and y != 0:
-        d = y/x
-        if d <= 1:
-            # 傾きが1以下の場合
-            ans3 = W * (W*d) / 2
-        else:
-            # 傾きが1より大きい
-            d = x/y
-            ans3 = H * (H*d) / 2
-
-    ans = max(ans1, ans2, ans3)
-
-    if ((ans==ans1 and ans1==ans2) or 
-       (ans==ans2 and ans2==ans3) or 
-       (ans==ans3 and ans3==ans1)):
+    if x == W/2 and y == H/2:
         is_multi = 1
     else:
         is_multi = 0
-
-    print(ans, is_multi)
-
+    
+    print(ans_area, is_multi)
 
 if __name__ == "__main__":
     solve()
