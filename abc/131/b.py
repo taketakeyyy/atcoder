@@ -8,7 +8,10 @@ def solve():
         all_taste += L+i-1
         eat_taste = min(eat_taste, abs(L+i-1))
     
-    ans = all_taste - eat_taste
+    if all_taste > 0:
+        ans = all_taste - eat_taste
+    else:
+        ans = all_taste + eat_taste
     print(ans)
 
 
