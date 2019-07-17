@@ -54,7 +54,7 @@ def solve():
     
     for j in range(W):
         if j == 0:
-            L[:, j] = grid[:, j]
+            L[:, j] = grid[:, j]  # L[:,j] := 行列Lのj列目
         else:
             L[:, j] = (L[:, j-1] + 1) * grid[:, j]
     
