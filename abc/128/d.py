@@ -1,59 +1,37 @@
 # -*- coding:utf-8 -*-
 from collections import deque
+"""解説
+全探索
+
+左からL個、右からR個宝石を取り、K-(L+R)個の宝石を筒に詰めるとき方針として、
+
+・筒に詰める宝石は絶対値の大きい負の値のもの
+
+あとは全探索
+"""
 
 def solve():
     N, K = list(map(int, input().split()))
     V = list(map(int, input().split()))
-    V = deque(V)
 
-    """考え方
-    DFS
-    """
+    ans = 0
+    r = min(N, K)
+    for a in range(r+1):  # 左から取る個数
+        for b in range(r+1):  # 右から取る個数
+            if r < a+b: continue
 
-    import copy
-    i_have1 = []
-    i_have2 = []
-    i_have3 = []
-    i_have4 = []
+            t = V[:a] + V[::-1][:b]  # 左からa個、右からb個とった宝石を「持っているリストt」にぶちこむ
+            t.sort(reverse=True)
 
-    V1 = copy.deepcopy(V)
-    V2 = copy.deepcopy(V)
-    V3 = copy.deepcopy(V)
-    V4 = copy.deepcopy(V)
-
-    def dfs(depth):
-        if depth == K:
-            return
-        
-        if len(V1) >= 1:
-            # 操作A
-            a = V1.popleft()
-            i_have1.append(a)
-            dfs(depth+1)
-
-        if len(V2) >= 1:
-            # 操作B
-            a = V2.pop()
-            i_have2.append(a)
-            dfs(depth+1)
-        
-        if len(i_have3) >= 1:
-            min_v = min(i_have3)
-            # 操作C
-            V3.appendleft(min_v)
-            dfs(depth+1)
-
-        if len(i_have4) >= 1:
-            # 操作D
-            min_v = min(i_have4)
-            V4.append(min_v)
-            dfs(depth+1)
-        
-        return
-    
-    ans = dfs(0, [], V)
+            for _ in range(K-a-b):
+                if len(t) > 0 and t[-1] < 0:
+                    t.pop()
+                    continue
+                break
+            ans = max(ans, sum(t))
 
     print(ans)
+
 
 
 if __name__ == "__main__":
