@@ -1,55 +1,33 @@
 # -*- coding:utf-8 -*-
 """考え方
-累積和
-
-・3パターン考える
-|_連続部分列_|.....
-
-.....|_連続部分列_|
-
-.....|_連続部分列_|.....
-
-
+しゃくとり法
 """
 
 def solve():
     N, K = list(map(int, input().split()))
     A = list(map(int, input().split()))
 
-    ruiseki = []
-    total = 0
-    for a in A:
-        total += a
-        ruiseki.append(total)
-    rN = len(ruiseki)
-
     ans = 0
     total = 0
-    right = 0
-    while True:
-        total += A[right]
-
+    for r in range(N):
+        total += A[r]
         if total >= K:
-            ans += N - right
+            ans += N - r  # こっから右側の部分文字列はすべてKを超えるので
             break
-        right += 1
 
-    for left in range(0, N):
-        total -= A[left]
+    # ここからしゃくとり法
+    for l in range(1, N):
+        total -= A[l-1]  # 左端を1個削除
 
-        while True:
+        for i in range(r, N):
+            if i != r:
+                total += A[i]  # 右端を1個足す
             if total >= K:
-                ans += N - right
+                ans += N - i  # こっから右側の部分文字列はすべてKを超える
                 break
-            
-            right += 1
-            if right+1 >= N:
-                break
-            total += A[right]
-    
+        r = i  # 右端の更新
+
     print(ans)
-
-
 
 
 if __name__ == "__main__":
