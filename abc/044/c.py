@@ -16,6 +16,12 @@ def solve():
     dp[0][0][0] = 1
 
     # dp[i][j][k] := i枚のうちj枚を選んで、和がkになる組み合わせ
+    """
+    dp[i][j][k] 
+    i : i枚目のカード
+    j : 選んだカードの数
+    k : 選んだカードの総和
+    """
     for i in range(N):
         for j in range(N):
             for k in range(4000+1):
