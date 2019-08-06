@@ -1,10 +1,4 @@
 # -*- coding:utf-8 -*-
-"""解説
-dp[j][k][s] := x1,...,xjから k枚選んで xiの合計をsにするような選び方の総数
-
-[@lilium氏]
-https://atcoder.jp/contests/abc044/submissions/5887235
-"""
 
 def solve():
     N, A = list(map(int, input().split()))
@@ -30,6 +24,7 @@ def solve():
     for j in range(1, N+1):  # 1枚以上選ぶ必要がある
         ans += dp[N][j][j*A]
     print(ans)
+
 
 if __name__ == "__main__":
     solve()
