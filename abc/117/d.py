@@ -53,7 +53,7 @@ def solve():
         x = 2**i
         if x > sumA or x > K:
             return 0
-        
+
         ans = 0
         for a in A:
             ans += x^a

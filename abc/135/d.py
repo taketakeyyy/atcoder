@@ -30,13 +30,13 @@ def solve():
             c = -1
         else:
             c = int(S[i])
-        
+
         for j in range(0, 10):
             if c != -1 and c != j: continue
-            
+
             for ki in range(0, 13):
                 dp[i+1][(ki* 10 + j)%13] += dp[i][ki]
-        
+
         for j in range(0, 13):
             dp[i+1][j] %= MOD
 
