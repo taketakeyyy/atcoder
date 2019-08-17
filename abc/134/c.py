@@ -25,6 +25,5 @@ def solve():
             print(max1_num)
 
 
-
 if __name__ == "__main__":
     solve()
