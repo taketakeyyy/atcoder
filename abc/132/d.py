@@ -82,7 +82,7 @@ def solve():
         if R+1-i < 0:
             print(0)
             continue
-        
+
         # R+1から、i個選ぶ
         ans = combination_formula(R+1, i)
         if B-i == 0:

@@ -20,8 +20,8 @@ def solve():
 
                 ans.append(ab + C[z])
 
-    ans.sort(reverse=True)              
-    
+    ans.sort(reverse=True)
+
     for i in range(0, K):
         print(ans[i])
 

@@ -17,7 +17,7 @@ def solve():
             continue
         print("No")
         return
-    
+
     print("Yes")
     return
 
