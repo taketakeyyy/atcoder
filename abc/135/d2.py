@@ -19,6 +19,8 @@ def solve():
         """ 動画見ろ
         https://youtu.be/brfeRxmzuKw?t=2226
         
+        ・DPテーブル間違ってる可能性あり
+
         1?2?3
 
          余り | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
@@ -30,6 +32,9 @@ def solve():
         dp[0][0] = 1
         dp[0][1] = 
         """
+
+        for j in range(0, 10):
+
 
 if __name__ == "__main__":
     solve()
