@@ -8,11 +8,13 @@ def solve():
 
     # O(N^2 * logN)の全探索で解く
     ans = 0
-    for a in range(N):
-        for b in range(a+1, N):
-            total = Ls[a]+Ls[b]
-
-            bisect.bisect_left
+    for a_i in range(N):
+        for b_i in range(a_i+1, N):
+            c_i = bisect.bisect_left(Ls, Ls[a_i]+Ls[b_i])
+            if c_i > b_i:
+                ans += c_i - b_i - 1
+            else:
+                pass
 
     print(ans)
 
