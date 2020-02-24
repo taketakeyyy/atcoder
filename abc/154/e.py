@@ -17,23 +17,25 @@ def solve():
     for i in range(n):
         for j in range(4):
             for k in range(2):
-                nd = int(S[i]) # 今の桁の値
-                for d in range(10):
-                    # 次の桁の値dを全部試す
+                d = int(S[i]) # 今の桁の値
+                for nd in range(10):
+                    # 次の桁の値ndを全部試す
                     ni = i + 1
                     nj = j
                     nk = k
 
-                    if d != 0: nj += 1
+                    if nd != 0:
+                        # 非ゼロを使ったので
+                        nj += 1
                     if nj > K:
                         # 範囲を超えるなら
                         continue
                     if k == 0:
                         # 今の状態がNと一致しているなら
-                        if d > nd:
+                        if nd > d:
                             # 次の桁が、今の桁の値より大きかったらダメ
                             continue
-                        elif d < nd:
+                        elif nd < d:
                             # 次の桁が、今の桁より小さかったら、「N以下」になることが確定する
                             nk = 1
 
