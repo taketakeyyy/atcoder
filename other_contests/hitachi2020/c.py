@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import copy
+
 class Dijkstra():
     """ ダイクストラ法
     重み付きグラフにおける単一始点最短路アルゴリズム
@@ -100,11 +102,14 @@ def solve():
         if len(rest) == :
             return False
 
+        copy.deepcopy()
+
+
     dic = {}
     for i in range(N):
         dic[i] = None
 
-    _dfs([i for i in range(N)], )
+    _dfs([i for i in range(N)], dic)
 
 if __name__ == "__main__":
     solve()
