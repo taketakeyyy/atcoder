@@ -3,7 +3,7 @@
 .vscode
 .vscode/**
 .vs
-.pdb
-.exe
+*.pdb
+*.exe
 
 # Don't ignore following files
