@@ -16,28 +16,15 @@ def solve():
         que = []
         for i in tmp_que:
             a = i%10
-            if 0 <= (a-1) <= 9:
+            for j in range(a-1, a+2):
+                if j < 0 or j > 9:
+                    continue
                 cnt += 1
-                new = i*10 + (a-1)
+                new = i*10+j
                 if K == cnt:
                     print(new)
                     return
                 que.append(new)
-            if 0 <= a <= 9:
-                cnt += 1
-                new = i*10 + a
-                if K == cnt:
-                    print(new)
-                    return
-                que.append(new)
-            if 0 <= (a+1) <= 9:
-                cnt += 1
-                new = i*10 + (a+1)
-                if K == cnt:
-                    print(new)
-                    return
-                que.append(new)
-
 
 
 if __name__ == "__main__":
