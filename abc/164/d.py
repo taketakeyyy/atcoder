@@ -1,10 +1,12 @@
 # -*- coding:utf-8 -*-
 
 def solve():
+    """解説実装
+    数学（mod, 式変形）+累積和
+    """
     MOD = 2019
     S = input()
 
-    """解説AC"""
     # A列を作成
     As = []
     d = 1

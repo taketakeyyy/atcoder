@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 
 def solve():
-    """解説実装"""
+    """解説実装
+    ダイクストラ+DP
+    """
     import sys
     import heapq
 
