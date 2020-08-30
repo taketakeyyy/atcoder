@@ -18,6 +18,13 @@ using namespace std;
 
 
 void solve(){
+    /**
+     * stoul()を使うとunsigned long(符号なし32bit整数)の数値に変換するが、
+     * これは最大 4294967295 まで表現できる
+     * 入力例2の  9999999999 を変換できないので注意。
+     * 代わりにstoull() := unsigned long long(符号なし64bit整数)に変換 を使う。
+     * これは最大 18,446,744,073,709,551,615 まで表現できる
+     * */
     string S;
     cin >> S;
 
@@ -41,6 +48,7 @@ void solve(){
 
     cout << ans << endl;
 }
+
 
 int main(int argc, char const *argv[]){
     solve();
