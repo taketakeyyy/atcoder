@@ -11,11 +11,15 @@
 #include <map>
 #include <vector>
 #include <list>
+#include <numeric>
 
 #define MOD 1000000007
 #define COUNTOF(array) (sizeof(array)/sizeof(array[0]))
-
+#define rep(i, n) for (int i = 0; i < (n); ++i)
 using namespace std;
+using ll = long long;
+using P = pair<int, int>;
+
 
 
 set<int64_t> prime_factor(int64_t n) {
@@ -159,7 +163,56 @@ void solve2() {
     cout << "not coprime" << endl;
 }
 
+
+void solve3() {
+    /* 解説AC */
+    const int A = 1000005;
+
+    int N;
+    cin >> N;
+    vector<int> As(N);
+    vector<int> Cs(A);  // 頻度を求める配列
+    for (int i=0; i<N; i++) {
+        cin >> As.at(i);
+        Cs[As[i]]++;
+    }
+
+    /* pairwise判定をする
+    頻度Csを順にiを素因数として持つものを数えていく。
+    同じ素因数をもつものが2つ以上あれば、その時点でpairwiseでない
+    計算量はO(Alog(A))
+    */
+    bool pairwise = true;
+    for (int i=2; i<A; i++) {
+        int cnt = 0;
+        for (int j=i; j<A; j+=i) {
+            cnt += Cs[j];
+        }
+        if (cnt > 1) pairwise = false;
+    }
+
+    if (pairwise) {
+        cout << "pairwise coprime" << endl;
+        return;
+    }
+
+    /* setwise判定をする
+    As[0]からAs[N]まで順番にGCDをして、結果が1だったらsetwise
+    計算量はO(N)?
+    ※ gcd(0,x) = x
+    */
+    int g = 0;
+    rep(i,N) g = gcd(g, As[i]);
+    if (g == 1) {
+        cout << "setwise coprime" << endl;
+        return;
+    }
+
+    cout << "not coprime" << endl;
+    return;
+}
+
 int main(int argc, char const *argv[]){
-    solve2();
+    solve3();
     return 0;
 }
