@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 
-def solve2():
+def solve():
     """BFSで解く
     """
     import sys
@@ -53,4 +53,4 @@ def solve2():
 
 
 if __name__ == "__main__":
-    solve2()
+    solve()
