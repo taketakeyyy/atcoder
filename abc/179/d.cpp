@@ -48,13 +48,13 @@ void solve(){
     rep(i, K) cin >> l[i] >> r[i];
 
     // dp[i] := 左からiマス目にいるときの、行き方の数
-    vector<mint> dp(N+1, 0);
-    vector<mint> dpsum(N+1, 0);
+    vector<mint> dp(N+1, 0);     // dp
+    vector<mint> dpsum(N+1, 0);  // 累積和
     dp[1] = 1;
     dpsum[1] = 1;
     for (int i=2; i<=N; i++) {
         rep(j, K) {
-            // [l[i], r[i]]
+            // [l[j], r[j]]
             int li = i-r[j];
             int ri = i-l[j];
             if (ri < 0) continue;
@@ -67,7 +67,31 @@ void solve(){
 }
 
 
+void solve2() {
+  int N, K;
+  cin >> N >> K;
+  vector<int> l(K), r(K);
+  rep(i, K) cin >> l[i] >> r[i];
+
+  // dp[i] := 左からiマス目にいるときの、行き方の総数（貰うDP）
+  vector<mint> dp(N+1, 0);
+  vector<mint> dpsum(N+1, 0);  // 累積和
+  dp[1] = 1; dpsum[1] = 1;
+  for (int i=2; i<N+1; i++) {
+    for (int j=0; j<K; j++) {
+      int li = i - r[j];
+      int ri = i - l[j];
+      if (ri < 1) continue;
+      li = max(li, 1);
+      dp[i] += dpsum[ri] - dpsum[li-1];
+    }
+    dpsum[i] = dpsum[i-1] + dp[i];
+  }
+  cout << dp[N] << endl;
+}
+
+
 int main(int argc, char const *argv[]){
-    solve();
+    solve2();
     return 0;
 }
