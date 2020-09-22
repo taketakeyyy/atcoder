@@ -5,5 +5,6 @@
 .vs
 *.pdb
 *.exe
+*/__pycached__/**
 
 # Don't ignore following files
