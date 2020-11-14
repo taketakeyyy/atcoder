@@ -12,42 +12,55 @@ void solve(){
     int N, M;
     cin >> N >> M;
     vector<int> H(N);
-    vector<int> W(N);
+    vector<int> W(M);
     for (int i=0; i<N; i++) cin >> H[i];
-    for (int i=0; i<N; i++) cin >> W[i];
+    for (int i=0; i<M; i++) cin >> W[i];
     sort(H.begin(), H.end());
     sort(W.begin(), W.end());
 
     /*
-    あらかじめ隣り合う人との差を計算しておき、（diff[i]）その合計も計算しておく(total)
-    すると、先生と組むことになる誰かを選んだら、それ以外の身長の差は一瞬で求まる
-
-    例)i = 0 1 2 3 4
-       H = 1 2 3 4 7
-    diff={0,1,1,1,3,0 }
-    total = 6
-    i=2の人が先生と組むことになったら、それ以外の人の身長の差は4(=total-diff[2]-diff[3])
-    i=4の人が先生と組むことになったら、それ以外の人の身長の差は3(=total-diff[4]-diff[5])
-    i  の人が先生と組むことになったら、それ以外の人の身長の差はx(=total-diff[i]-diff[i+1])
-
-    よって、iの人が先生と組むことになるときのそれ以外の人の身長の差は、O(N)で計算できる。
-
-    iの人が先生と組むときの身長差は、二分探索で求めればよい。
-
-    全体の計算量はO(N*logN)
-     */
-    vector<int>diff(N+2,0);
-    int total = 0;
-    for (int i=0; i<N-1; i++) {
-        diff[i+1] = H[i]-H[i+1];
-        total += H[i]-H[i+1];
-    }
-
-    vector<int> diffT(N,0);  // 先生との最小の身長差
+    i=0から順に、先生と組む場合の身長差を計算をする
+    i=1のときは、しゃくとり法を使えば先生と組む以外の人たちの身長差は一瞬で計算できるO(1)
+    先生がどの身長になればよいかは、二分探索で求めればO(logN)
+    よって、この計算量はO(NlogN)でいけそう
+    */
+    vector<int> diffT(N,0);  // 生徒iと、先生との最小の身長差
     for (int i=0; i<N; i++) {
-        // ここでiの人と先生の最小な差を二分探索で求める
+        auto it = lower_bound(W.begin(), W.end(), H[i]);
+        if (it == W.begin()) {
+            diffT[i] = W[0]-H[i];
+        }
+        else if (it == W.end()) {
+            diffT[i] = H[i]-W.back();
+        }
+        else {
+            diffT[i] = min(abs(H[i]-*it), abs(H[i]-*(it-1)));
+        }
     }
 
+    // i=0の生徒が先生とペアになるとき
+    int total = 0;
+    for (int i=1; 2*i<N; i++) {
+        total += H[2*i]-H[2*i-1];
+    }
+    int ans = total + diffT[0];
+
+    // i=1~N-1の生徒が先生とペアになるときを、しゃくとり法で求める
+    for (int i=1; i<N; i++) {
+        if (i%2==1) {
+            total -= H[i+1] - H[i];
+            total += H[i+1] - H[i-1];
+            ans = min(ans, total+diffT[i]);
+        }
+        else {
+            total -= H[i] - H[i-2];
+            total += H[i-1] - H[i-2];
+            ans = min(ans, total+diffT[i]);
+        }
+    }
+
+    // 出力
+    cout << ans << endl;
 }
 
 
