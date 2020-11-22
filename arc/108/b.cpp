@@ -65,7 +65,27 @@ void solve(){
 }
 
 
+void solve2() {
+    /* 解説AC */
+    int N; string S;
+    cin >> N; cin >> S;
+
+    int delete_num = 0;
+    string T = "";
+    for (char c : S) {
+        T += string{c};
+        if (T.size() >= 3) {
+            if (T.substr(T.size()-3, 3) == "fox") {
+                delete_num += 3;
+                T.erase(T.size()-3);
+            }
+        }
+    }
+    cout << N-delete_num << endl;
+}
+
+
 int main(int argc, char const *argv[]){
-    solve();
+    solve2();
     return 0;
 }
