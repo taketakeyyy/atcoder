@@ -61,7 +61,11 @@ void solve(){
 void solve2() {
     /* 解説AC */
     const int X = 100;
-    // dp[i][j][k]:=
+    // dp[i][j][k]:=金貨i枚、銀貨j枚、銅貨k枚ある状態からの期待値
+    //             = dp[i+1][j][k]*(i/(i+j+k))
+    //              +dp[i][j+1][k]*(j/(i+j+k))
+    //              +dp[i][j][k+1]*(k/(i+j+k))
+    //              +1(1手進める)
     vector<vector<vector<double>>> dp(X+1, vector<vector<double>>(X+1, vector<double>(X+1, 0)));
     int a, b, c;
     cin >> a >> b >> c;
@@ -69,7 +73,7 @@ void solve2() {
     for (int i=X-1; i>=0; --i) {
         for (int j=X-1; j>=0; --j) {
             for (int k=X-1; k>=0; --k) {
-                if (i+j+k==0) continue;
+                if (i+j+k==0) continue;  // 分母が0になるので
                 double now = 0;
                 now += dp[i+1][j][k]*i;
                 now += dp[i][j+1][k]*j;
