@@ -1,84 +1,39 @@
 # -*- coding:utf-8 -*-
 
 def solve():
-    import sys
     import numpy as np
 
-    H, W, M = list(map(int, sys.stdin.readline().split()))
-    grid = np.array([[0 for _ in range(W)] for _ in range(H)])
+    H, W, M = list(map(int, input().split()))
+    yoko = np.array([0 for _ in range(H)])  # hに爆弾を置いたとき、横方向にいくつ爆破対象を爆破できるか
+    tate = np.array([0 for _ in range(W)])  # wに爆弾を置いたとき、縦方向にいくつ爆破対象を爆破できるか
+    targets = set()  # 爆破対象の集合
+
     for _ in range(M):
-        h, w = list(map(int, sys.stdin.readline().split()))
-        h, w = h-1, w-1
-        grid[h][w] = 1
+        h, w = list(map(int, input().split()))
+        yoko[h-1] += 1
+        tate[w-1] += 1
+        targets.add((h-1, w-1))
 
-    cols = np.sum(grid, axis=0)  # 列ごとの合計値
-    rows = np.sum(grid, axis=1)  # 行ごとの合計値
-    print(cols)
-    print(rows)
-    print("---")
+    yoko_max = yoko.max()
+    tate_max = tate.max()
 
-    ans = np.max(cols) + np.max(rows)
-    print(np.max(cols))
-    print(np.max(rows))
-    print("====")
-    col_i = np.argmax(cols)
-    row_i = np.argmax(rows)
-    print(col_i, row_i)
+    yoko_cands = np.where(yoko==yoko_max)[0]
+    tate_cands = np.where(tate==tate_max)[0]
 
-    if grid[row_i][col_i] == 1:
-        print(ans-1)
+    # HxWのように見えるが、爆破対象はたかだかMなので、O(M)
+    is_found = False
+    for h in yoko_cands:
+        for w in tate_cands:
+            if not (h, w) in targets:  # 爆破対象の座標じゃないほうが、一個多く爆破できる
+                is_found = True
+                break
+        if is_found:
+            break
+
+    if is_found:
+        print(tate_max+yoko_max)
     else:
-        print(ans)
-
-def solve2():
-    import sys
-    import numpy as np
-
-    H, W, M = list(map(int, sys.stdin.readline().split()))
-    grid = np.array([[0 for _ in range(W)] for _ in range(H)])
-    for _ in range(M):
-        h, w = list(map(int, sys.stdin.readline().split()))
-        h, w = h-1, w-1
-        grid[h][w] = 1
-
-    L = np.zeros((H,W), dtype=int)
-    R = np.zeros((H,W), dtype=int)
-    U = np.zeros((H,W), dtype=int)
-    D = np.zeros((H,W), dtype=int)
-
-    # 自分より左の爆破数を数える（自分は含めない）
-    for w in range(W):
-        if w == 0:
-            L[:, w] = 0
-        else:
-            L[:, w] = (L[:, w-1]) + grid[:, w-1]
-
-    # 右の爆破数
-    for w in range(W-1, -1, -1):
-        if w == W-1:
-            R[:, w] = 0
-        else:
-            R[:, w] = (R[:, w+1]) + grid[:, w+1]
-
-    # 上の爆破数
-    for h in range(H):
-        if h == 0:
-            U[h] = 0
-        else:
-            U[h] = (U[h-1]) + grid[h-1]
-
-    # 下の爆破数
-    for h in range(H-1, -1, -1):
-        if h == H-1:
-            D[h] = 0
-        else:
-            D[h] = (D[h+1]) + grid[h+1]
-
-    # 答え
-    ans = np.max(L+R+U+D+grid)
-    print(ans)
-
-
+        print(tate_max+yoko_max-1)
 
 if __name__ == "__main__":
-    solve2()
+    solve()
