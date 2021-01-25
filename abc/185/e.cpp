@@ -50,6 +50,9 @@ void solve(){
     for (int i=0; i<M; i++) {
         cin >> B[i];
     }
+
+
+    // dp[i][j] := Aが先頭i文字だけで、Bが先頭j文字だけだった場合の答え
     vector<vector<int>> dp(N+1, vector<int>(M+1, INT_MAX-100));
     dp[0][0] = 0;
 
