@@ -5,6 +5,7 @@
 .vs
 *.pdb
 *.exe
+*.exe.stackdump
 */__pycached__/**
 
 # Don't ignore following files
