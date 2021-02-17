@@ -67,48 +67,23 @@ void solve(){
                 continue;
             }
             // マスが黒い場合
-            if (dp[h][w]==(ll)INF) {
-                // まだコストが決まってない場合
-                ll tmp1=(ll)INF, tmp2=(ll)INF;
-                if (h-1>=0) {
-                    if (grid[h-1][w]=='.') tmp1 = dp[h-1][w]+1;
-                    else tmp1 = dp[h-1][w];
-                }
-                if (w-1>=0) {
-                    if (grid[h][w-1]=='.') tmp2 = dp[h][w-1]+1;
-                    else tmp2 = dp[h][w-1];
-                }
-                dp[h][w] = min(dp[h][w], min(tmp1, tmp2));
-
-                for (int nw=w+1; nw<W; nw++) {
-                    if (grid[h][nw]=='#') {
-                        dp[h][nw] = min(dp[h][nw], dp[h][w]);
-                    }
-                    else {
-                        break;
-                    }
-                }
+            ll tmp1=(ll)INF, tmp2=(ll)INF;
+            if (h-1>=0) {
+                if (grid[h-1][w]=='.') tmp1 = dp[h-1][w]+1;
+                else tmp1 = dp[h-1][w];
             }
-            else {
-                // すでにコストが決まっている場合
-                ll tmp1=(ll)INF, tmp2=(ll)INF;
-                if (h-1>=0) {
-                    if (grid[h-1][w]=='.') tmp1 = dp[h-1][w]+1;
-                    else tmp1 = dp[h-1][w];
-                }
-                if (w-1>=0) {
-                    if (grid[h][w-1]=='.') tmp2 = dp[h][w-1]+1;
-                    else tmp2 = dp[h][w-1];
-                }
-                dp[h][w] = min(dp[h][w], min(tmp1, tmp2));
+            if (w-1>=0) {
+                if (grid[h][w-1]=='.') tmp2 = dp[h][w-1]+1;
+                else tmp2 = dp[h][w-1];
+            }
+            dp[h][w] = min(dp[h][w], min(tmp1, tmp2));
 
-                for (int nw=w+1; nw<W; nw++) {
-                    if (grid[h][nw]=='#') {
-                        dp[h][nw] = min(dp[h][nw], dp[h][w]);
-                    }
-                    else {
-                        break;
-                    }
+            for (int nw=w+1; nw<W; nw++) {
+                if (grid[h][nw]=='#') {
+                    dp[h][nw] = min(dp[h][nw], dp[h][w]);
+                }
+                else {
+                    break;
                 }
             }
         }
