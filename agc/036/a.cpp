@@ -43,6 +43,7 @@ ostream& operator<<(ostream& os, const mint& a) { return os << a.x;}
 
 
 void solve(){
+    /*AC*/
     ll S; cin >> S;
     // (X3,Y3)=(0,0)に固定
     // 外積の面積の公式より、X1*Y2-X2*Y1 = S
@@ -60,8 +61,29 @@ void solve(){
     }
 }
 
+void solve2() {
+    ll S; cin >> S;
+    // (X3,Y3)=(0,0)に固定
+    // 外積の面積の公式より、X1*Y2-X2*Y1 = S
+    // X1=10^9, X2=1と固定すると、Y2とY1の値次第で10^19以下のすべての値を作成できる
+    // S=[0,100], Y=[0,10]で考えてみる。
+    // 10Y2-Y1 = S
+    // S=100のとき、Y2=10, Y1=0
+    // S=99のとき、Y2=10,Y1=1
+    // S=88のとき、Y2=9,Y1=2
+    // S=1のとき、Y2=1,Y1=9
+    // S=0のとき、Y2=0,Y1=0
+    // このように、Y2=ceil(S/10),Y1=Y2*10-Sで求まる
+    ll x1, x2, y1, y2;
+    x1 = 1000000000;
+    x2 = 1;
+    y2 = (ll)ceil((double)S/x1);
+    y1 = y2*x1-S;
+    cout << x1 << " " << y1 << " " << x2 << " " << y2 << " 0 0" << endl;
+}
+
 
 int main(int argc, char const *argv[]){
-    solve();
+    solve2();
     return 0;
 }
