@@ -58,11 +58,11 @@ void solve(){
     vector<ll> dist(N, INF);
     dist[X] = 0;
     priority_queue<pair<ll,ll>, vector<pair<ll,ll>>, greater<pair<ll,ll>>> que;
-    que.push(make_pair(X,0));
+    que.push(make_pair(0,X));
 
     while(!que.empty()) {
         ll u, d;
-        tie(u, d) = que.top();
+        tie(d, u) = que.top();
         que.pop();
 
         // スキップ処理
@@ -79,7 +79,7 @@ void solve(){
             }
             if (dist[v] > now+cost) {
                 dist[v] = now+cost;
-                que.push(make_pair(v, dist[v]));
+                que.push(make_pair(dist[v], v));
             }
         }
     }
