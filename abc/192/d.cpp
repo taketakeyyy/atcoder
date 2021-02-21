@@ -104,13 +104,14 @@ void solve(){
         int a = x-'0';
         n = max(n, (ll)a);
     }
+    n++;
 
-    // めぐる2分探索
-    ll ac = n, wa = M+1;
+    // 2分探索
+    // X = 32, M = 11のとき、答え0になるので注意（★）
+    ll ac = n, wa = M;
     while (wa-ac > 1) {  // waとacが隣り合ったら終了
         ll mid = (ac+wa)/2;
-        ll v = f(mid);
-        if (v <= M) {
+        if (f2(mid) <= M) {
             // OKなら
             ac = mid;
         }
@@ -118,7 +119,17 @@ void solve(){
             wa = mid;
         }
     }
-    cout << ac-n << endl;
+    // acかwaのどちらかが答え...とは限らない
+    if (ac==n && f2(n) > M) {
+        // （★）のようなとき
+        cout << 0 << endl;
+    }
+    else if (f2(wa)<=M) {
+        cout << wa-n+1 << endl;
+    }
+    else {
+        cout << ac-n+1 << endl;
+    }
 }
 
 
