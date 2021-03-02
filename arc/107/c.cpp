@@ -196,7 +196,8 @@ void solve(){
 
 void solve2(){
     // WA
-    // 連結成分のchainに問題あり？何が悪いのかよくわからん
+    // 連結成分のchainに問題あり。
+    // UnionFindでいうグループの併合をしていないのが原因
     ll N, K; cin >> N >> K;
     vector<vector<ll>> As(N, vector<ll>(N));
     for (int i=0; i<N; i++) {
