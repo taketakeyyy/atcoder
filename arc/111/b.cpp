@@ -36,24 +36,34 @@ struct UnionFindVerSize {
             /* ノード番号xとyが属する木を併合する（グループの併合） */
             T gx = this->find_root(x); T gy = this->find_root(y);
             if (gx == gy) {
+                // (★1) すでに同じグループに所属しているので、サイクル発生
                 this->cycles.insert(gx);
                 return;
             }
 
-            // 併合するときに、片方がサイクルだったら、もう片方もサイクルになる
+            // (★2)併合するときに、片方がサイクルだったら、併合後もサイクルになる
+            bool flag_cycle = false;
             if (this->is_cycle(gx) || this->is_cycle(gy)) {
-                this->cycles.insert(gx);
-                this->cycles.insert(gy);
+                flag_cycle = true;
+                this->cycles.erase(gx);  // 消しとく
+                this->cycles.erase(gy);  // 消しとく
             }
 
             // 深い方が浅い方を併合する（木の偏りが減るので）
+            ll g;
             if (this->sizes[gx] < this->sizes[gy]) {
                 this->parents[gx] = gy;
                 this->sizes[gy] += this->sizes[gx];
+                g = gy;
             }
             else {
                 this->parents[gy] = gx;
                 this->sizes[gx] += this->sizes[gy];
+                g = gx;
+            }
+
+            if (flag_cycle) {
+                this->cycles.insert(g);  // (★2)併合後もサイクル
             }
         }
 
@@ -120,8 +130,7 @@ void solve() {
             ans += uf.get_size(gi);
         }
         else {
-            // ans += uf.get_size(gi)-1;
-            ans += max<ll>(0, uf.get_size(gi)-1);
+            ans += uf.get_size(gi)-1;
         }
     }
     cout << ans << endl;
