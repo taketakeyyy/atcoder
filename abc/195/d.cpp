@@ -8,69 +8,60 @@ using namespace std;
 using ll = long long;
 using pii = pair<int,int>;
 using pll = pair<long,long>;
-const long long INF = LONG_LONG_MAX - 1001001001;
+const long long INF = LONG_LONG_MAX - 1001001001001001;
 void chmax(int& x, int y) { x = max(x,y); }
 void chmin(int& x, int y) { x = min(x,y); }
 
-bool bagsort(pair<int,int>a, pair<int,int>b) {
-    // 価値が高くて、大きさが大きいほど左
-    if (a.first > b.first) return true;
-    if (a.first == b.first) {
-        if (a.second >= b.second) return true;
+bool bag_sort(pair<ll,ll> x, pair<ll,ll> y) {
+    if (x.second > y.second) {
+        return true;
+    }
+    else if (x.second == y.second) {
+        if (x.first == y.first) {
+            return false;
+        }
+        else if (x.first > y.first) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
     return false;
 }
 
-bool bagsort1(pair<int,int>a, pair<int,int>b) {
-    // 価値が高いほうが左
-    return (a.first >= b.first);
-}
-
-bool bagsort2(pair<int,int>a, pair<int,int>b) {
-    // 大きいほど左
-    return (a.second >= b.second);
-}
-
-int N, M, Q;
-vector<pair<int,int>> bags;  // 荷物
-vector<int> X;
-vector<int> newX;
-set<int> used;
-
 void solve() {
+    ll N, M, Q;
     cin >> N >> M >> Q;
-    for (int i=0; i<N; i++) {
-        int w, v; cin >> w >> v;
-        bags.push_back(make_pair(v,w));
+    vector<pair<ll,ll>> bags;
+    for(int i=0; i<N; i++) {
+        ll w, v;
+        cin >> w >> v;
+        bags.push_back(make_pair(w,v));
     }
-    sort(bags.begin(), bags.end(), bagsort);
-    // sort(bags.begin(), bags.end(), bagsort2);
-    // sort(bags.begin(), bags.end(), bagsort1);
+    sort(bags.begin(), bags.end(), bag_sort);
 
-    for (int m=0; m<M; m++) {
-        int x; cin >> x;
-        X.push_back(x);
-    }
-
-    for(int q=0; q<Q; q++) {
-        int L, R; cin >> L >> R;
-        L--; R--;
-        newX.resize(0);
-        for(int m=0; m<M; m++) {
-            if (L<=m && m<=R) continue;
-            newX.push_back(X[m]);
+    vector<ll>X(M);
+    for(int i=0; i<M; i++) cin >> X[i];
+    for(int q=0; q<Q; q++) {  // O(Q)
+        ll l, r; cin >> l >> r;
+        l--; r--;
+        vector<ll> newX;
+        for(int i=0; i<M; i++) {
+            if (i>=l && i<=r) continue;
+            newX.push_back(X[i]);
         }
         sort(newX.begin(), newX.end());
-
-        int ans = 0;
-        used = set<int>();
-        for(int i=0; i<(int)newX.size(); i++) {
-            for(int j=0; j<(int)bags.size(); j++) {
-                if (used.count(j)) continue;
-
-                if (newX[i] >= bags[j].second) {
-                    ans += bags[j].first;
-                    used.insert(j);
+        vector<bool> used(newX.size(), false);
+        // 価値の大きい順に入れていくが、できるだけ大きい荷物を先に入れる
+        ll ans = 0;
+        for(int i=0; i<N; i++) {  // O(N)
+            ll w, v;
+            tie(w, v) = bags[i];
+            for(int j=0; j<newX.size(); j++) {  // O(M)
+                if (w <= newX[j] && !used[j]) {
+                    ans += v;
+                    used[j] = true;
                     break;
                 }
             }
