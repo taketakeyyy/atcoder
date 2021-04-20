@@ -1,0 +1,60 @@
+#include <bits/stdc++.h>
+#define _USE_MATH_DEFINES  // M_PI等のフラグ
+#define MOD 1000000007
+#define COUNTOF(array) (sizeof(array)/sizeof(array[0]))
+#define rep(i,n) for (int i = 0; i < (n); ++i)
+#define intceil(a,b) (a+(b-1))/b
+using namespace std;
+using ll = long long;
+using pii = pair<int,int>;
+using pll = pair<long,long>;
+const long long INF = LONG_LONG_MAX - 1001001001001001;
+void chmax(int& x, int y) { x = max(x,y); }
+void chmin(int& x, int y) { x = min(x,y); }
+
+
+void solve() {
+    ll N; cin >> N;
+
+    // カッコ列を左から走査していき、
+    // ( の場合は+1する
+    // ) の場合は-1する
+    // 走査中に負の値にならず、かつ合計が0になるなら正しいカッコ列
+    // カッコ列は全探索で作る
+    vector<string> ans;
+    for(int bit=0; bit<(1<<N); bit++) {
+        string s = "";
+        for(int d=0; d<N; d++) {
+            if (bit>>d&1) {
+                s += "(";
+            }
+            else {
+                s += ")";
+            }
+        }
+
+        int cost = 0;
+        for(int i=0; i<s.size(); i++) {
+            if (s[i]=='(') cost++;
+            else cost--;
+            if (cost < 0) {
+                break;
+            }
+        }
+        if (cost==0) {
+            ans.push_back(s);
+        }
+    }
+
+    // 出力
+    sort(ans.begin(), ans.end());
+    for(int i=0; i<(int)ans.size(); i++) {
+        cout << ans[i] << endl;
+    }
+}
+
+
+int main() {
+    solve();
+    return 0;
+}
