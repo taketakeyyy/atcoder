@@ -15,7 +15,7 @@ void chmin(int& x, int y) { x = min(x,y); }
 ll N;
 vector<char> C;
 vector<vector<ll>> tree;
-vector<vector<ll>> dp;  // dp[i][j] := 頂点iを根とする部分木において、頂点iを含む連結成分の状態がjのとき（j=0: aしかない, j=1: bしかない j=2: a,b両方ある）の通り数
+vector<vector<ll>> dp;  // 木DP：dp[i][j] := （頂点iを根とする部分木において、）頂点iを含む連結成分の状態がjのとき（j=0: aしかない, j=1: bしかない j=2: a,b両方ある）の通り数
 
 void dfs(ll u, ll parent) {
     ll val1 = 1, val2 = 1;
@@ -33,7 +33,7 @@ void dfs(ll u, ll parent) {
             val2 %= MOD;
         }
         dp[u][0] = val1;
-        dp[u][2] = (val2 - val1 + MOD) % MOD;
+        dp[u][2] = (val2 - val1 + MOD) % MOD;  // val1の分を除く（包含関係にあるので）
     }
     else {  // 'b' のとき（以下は'a'のときと同様）
         for (auto v: tree[u]) {
