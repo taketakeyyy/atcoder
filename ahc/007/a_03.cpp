@@ -157,6 +157,26 @@ pair<UnionFindVerSize<long long>, long long> kruskal2(vector<edge> es, long long
     return {uf, res};
 }
 
+
+pair<UnionFindVerSize<long long>, long long> kruskal3(ll start, vector<edge> es, long long V, long long E, const set<pair<ll,ll>> &disconnected, UnionFindVerSize<ll> uf, ll target_u, ll target_v) {
+    // TODO 毎回ソートせんでもいいのでは？
+    sort(es.begin()+start, es.end(), comp);  // edge.costが小さい順にソートする
+
+    // 最小全域木は最後まで作る必要はなく、辺(target_u, target_v)が接続するかどうかわかったら打ち切ってよい
+    for (long long i=start; i<E; i++) {
+        edge e = es[i];
+        if (disconnected.count({e.u, e.v})) continue;
+
+        if (!uf.is_same_group(e.u, e.v)) {
+            uf.unite(e.u, e.v);
+        }
+
+        if (e.u==target_u && e.v==target_v) break;
+    }
+    return {uf, -1};
+}
+
+
 /* 2点間のユークリッド距離を整数に四捨五入する計算 */
 ll distance(ll x1, ll y1, ll x2, ll y2) {
     return (ll)round(sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2)));
@@ -188,10 +208,9 @@ bool calc_confidence_interval(ll d) {
 
 
 // 並行世界を作る戦略
-// TLE
 void solve() {
-    // random_device rnd;
-    // mt19937 mt(rnd());
+    random_device rnd;
+    mt19937 mt(rnd());
     ll N = 400, M = 1995;
     // ll MAX_DISTANCE = distance(0,0,800,800);
 
@@ -200,25 +219,25 @@ void solve() {
         cin >> X[i] >> Y[i];
     }
 
-    ll WORLD_NUM = 3;  // 19
+    ll WORLD_NUM = 5;  // 今の所5が限界…
     vector<vector<edge>> world(WORLD_NUM, vector<edge>(M));  // 並行世界を作る
     for(ll i=0; i<M; i++) {
         ll u, v;
         cin >> u >> v;
         ll d = distance(X[u], Y[u], X[v], Y[v]);
-        // uniform_int_distribution<> myrand(d, 3*d);
+        uniform_int_distribution<> myrand(d, 3*d);
 
         for(ll w=0; w<WORLD_NUM; w++) {
-            edge e = {u, v, rand_distance(d)};
-            // edge e = {u, v, (ll)myrand(mt)};  // ランダムに[d, 3d]に設定
+            // edge e = {u, v, rand_distance(d)};
+            edge e = {u, v, (ll)myrand(mt)};  // ランダムに[d, 3d]に設定
             // edge e = {u, v, 2*d};
             world[w][i] = e;
         }
     }
 
     // 毎回クラスカルする
-    vector<edge> connected;   // 接続することが決まった辺
     set<pair<ll,ll>> disconnected;  // 接続しないことが決まった辺
+    UnionFindVerSize uf = UnionFindVerSize<ll>(N);  // クラスカル法を途中から再開できるように、予め確定した辺までを保存しておく
     for(ll i=0; i<M; i++) {  // O(M)
         ll l; cin >> l;
         ll u = world[0][i].u;
@@ -228,7 +247,7 @@ void solve() {
         ll vote = 0;  // 投票数
         for(ll w=0; w<WORLD_NUM; w++) {
             world[w][i] = {u, v, l};
-            auto [kruskal_uf, kruskal_cost] = kruskal2(world[w], N, M, connected, disconnected); // O(M logN)?
+            auto [kruskal_uf, kruskal_cost] = kruskal3(i, world[w], N, M, disconnected, uf, u, v);
 
             if (kruskal_uf.graph[u].count(v)) {
                 vote++;
@@ -238,7 +257,7 @@ void solve() {
         // 過半数を越えてたら辺を採択
         if (vote > WORLD_NUM/2) {
             cout << "1" << endl << flush;
-            connected.push_back({u, v, l});
+            uf.unite(u, v);
         }
         else {
             cout << "0" << endl << flush;
