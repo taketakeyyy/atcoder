@@ -14,7 +14,9 @@ void chmin(int& x, int y) { x = min(x,y); }
 
 
 void solve() {
-
+    ll D; cin >> D;
+    double ans = (double)D/100;
+    printf("%.4lf\n", ans);
 }
 
 
