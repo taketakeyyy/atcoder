@@ -1,0 +1,52 @@
+#define _USE_MATH_DEFINES  // M_PI等のフラグ
+#include <bits/stdc++.h>
+#define MOD 1000000007
+#define COUNTOF(array) (sizeof(array)/sizeof(array[0]))
+#define rep(i,n) for (int i = 0; i < (n); ++i)
+#define intceil(a,b) ((a+(b-1))/b)
+using namespace std;
+using ll = long long;
+using pii = pair<int,int>;
+using pll = pair<long,long>;
+const long long INF = LONG_LONG_MAX - 1001001001001001;
+void chmax(int& x, int y) { x = max(x,y); }
+void chmin(int& x, int y) { x = min(x,y); }
+
+
+void solve() {
+    ll A, B, C, D, E, F, X;
+    cin >> A >> B >> C >> D >> E >> F >> X;
+    ll takahashi = (B*A)*(X/(A+C));
+    ll rest = (X%(A+C));
+    if (rest >= A) {
+        takahashi += A*B;
+    }
+    else {
+        takahashi += rest*B;
+    }
+
+    ll aoki = (D*E)*(X/(D+F));
+    rest = X%(D+F);
+    if (rest >= D) {
+        aoki += D*E;
+    }
+    else {
+        aoki += rest*E;
+    }
+
+    if (takahashi > aoki) {
+        cout << "Takahashi" << endl;
+    }
+    else if (takahashi < aoki) {
+        cout << "Aoki" << endl;
+    }
+    else {
+        cout << "Draw" << endl;
+    }
+}
+
+
+int main() {
+    solve();
+    return 0;
+}
