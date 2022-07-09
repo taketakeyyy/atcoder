@@ -27,27 +27,16 @@ void solve() {
     for(ll bit=0; bit<(1<<H); bit++) {
         map<ll,ll> Map;
         for(ll w=0; w<W; w++) {
-            ll hv = -1;
+            ll v = -1;  // マスに書かれている整数
             bool flag = true;
-            ll count = 0;
+            ll cnt = 0;  // マスに書かれている整数の個数
             for(ll h=0; h<H; h++) {
-                if (bit>>h&1) {
-                    if (hv==-1) {
-                        hv = P[h][w];
-                        count++;
-                    }
-                    else if (P[h][w]!=hv){
-                        flag = false;
-                        break;
-                    }
-                    else {
-                        count++;
-                    }
-                }
+                if (!(bit>>h&1)) { continue; }
+                if (v==-1) { v = P[h][w]; cnt++; continue; }
+                if (P[h][w]!=v){ flag = false; break; }
+                cnt++;
             }
-            if (flag) {
-                Map[hv] += count++;
-            }
+            if (flag) { Map[v] += cnt; }
         }
 
         for(auto [key, value]: Map) {
