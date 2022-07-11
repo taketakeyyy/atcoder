@@ -13,7 +13,7 @@ void chmax(int& x, int y) { x = max(x,y); }
 void chmin(int& x, int y) { x = min(x,y); }
 
 
-void solve() {
+void solve1() {
     ll K; cin >> K;
     if (K%9 != 0) {
         cout << 0 << endl;
@@ -34,8 +34,28 @@ void solve() {
     cout << dp[K] << endl;
 }
 
+void solve2() {
+    ll K; cin >> K;
+    if (K%9 != 0) {
+        cout << 0 << endl;
+        return;
+    }
+
+    // dp[i] := 桁和がiの場合の通り数
+    vector<ll> dp(K+1);
+    for(ll k=1; k<=9; k++) { dp[k] = 1; }
+    for(ll k=1; k<K+1; k++) {
+        for(ll j=1; j<=9; j++) {
+            if (k-j <= 0) break;
+            dp[k] += dp[k-j];
+            dp[k] %= MOD;
+        }
+    }
+    cout << dp[K] << endl;
+}
 
 int main() {
-    solve();
+    // solve1();
+    solve2();
     return 0;
 }
