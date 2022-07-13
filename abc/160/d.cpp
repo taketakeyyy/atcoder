@@ -14,7 +14,6 @@ void solve(){
     vector<int> dist(N, 0);
     for (int i=0; i<N; i++) {
         for (int j=i+1; j<N; j++) {
-            // dist[min(j-i, min(abs(X-i)+abs(Y-j)+1, abs(Y-i)+abs(X-j)+1))]++;
             dist[min(j-i, abs(X-i)+abs(Y-j)+1)]++;
         }
     }
