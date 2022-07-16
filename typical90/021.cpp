@@ -46,10 +46,8 @@ void dfs_step2(ll u, set<ll> &visited) {
 
 void solve() {
     cin >> N >> M;
-    id2sccid.resize(N, -1);
-    sccid2id.resize(N, -1);
-    paths.resize(N);
-    rev_paths.resize(N);
+    id2sccid.resize(N, -1); sccid2id.resize(N, -1);
+    paths.resize(N); rev_paths.resize(N);
     for(int i=0; i<M; i++) {
         ll a, b; cin >> a >> b;
         a--; b--;
