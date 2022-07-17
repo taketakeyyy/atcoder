@@ -179,16 +179,6 @@ void solve() {
         S[i] = {x,y};
     }
 
-    // dist[i][j] := 仲間iから仲間jの距離（の2乗）
-    vector dist(N, vector<ll>(N, 0));
-    for(ll i=0; i<N; i++) {
-        auto [x1, y1] = F[i];
-        for(ll j=0; j<N; j++) {
-            auto[x2, y2] = F[j];
-            dist[i][j] = (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1);
-        }
-    }
-
     // 制限時間8secなので、O(NM)いける？
     // danger[i] := 仲間iの、最も近いスパイまでの距離
     vector<ll> danger(N, INF);
