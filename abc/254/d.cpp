@@ -31,7 +31,7 @@ map<ll,ll> prime_factor(ll n) {
 void solve() {
     ll N; cin >> N;
 
-    map<ll,ll> f;  // key: 素因数分解の肩をMOD 2したときの積, val: その個数
+    map<ll,ll> c;  // key: 素因数分解の肩をMOD 2したときの積（f(x)）, val: その個数
     for(ll i=1; i<=N; i++) {
         map<ll,ll> pf = prime_factor(i);
         ll v = 1;
@@ -39,12 +39,12 @@ void solve() {
             val %= 2;
             if (val != 0) v *= key;
         }
-        f[v]++;
+        c[v]++;
     }
 
     // 出力
     ll ans = 0;
-    for(auto[key, val]: f) {
+    for(auto[key, val]: c) {
         ans += val*val;
     }
     cout << ans << endl;
