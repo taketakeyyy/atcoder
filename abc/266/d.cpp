@@ -18,33 +18,27 @@ vector<ll> vx = { 0, 1, 0, -1 };
 
 void solve() {
     ll N; cin >> N;
-    vector<tuple<ll,ll,ll>> sunuke;
-    vector<ll> T(N), X(N), A(N);
     map<ll,pair<ll,ll>> sunukemp;
     ll MAX_T = 0;
     for(ll i=0; i<N; i++) {
-        cin >> T[i] >> X[i] >> A[i];
-        sunuke.push_back({T[i], X[i], A[i]});
-        sunukemp[T[i]] = {X[i], A[i]};
-        MAX_T = max(MAX_T, T[i]);
+        ll t, x, a;
+        cin >> t >> x >> a;
+        sunukemp[t] = {x, a};
+        MAX_T = max(MAX_T, t);
     }
 
     // dp[t][x] := 時刻tに座標xにいるときの合計値の最大値
     vector dp(MAX_T+1, vector<ll>(5, 0));
     for(ll t=1; t<=MAX_T; t++) {
         for(ll x=0; x<=4; x++) {
-            if (x-1 >= 0) {
-                dp[t][x] = max(dp[t][x], dp[t-1][x-1]);
-            }
+            if (x-1 >= 0) dp[t][x] = max(dp[t][x], dp[t-1][x-1]);
             dp[t][x] = max(dp[t][x], dp[t-1][x]);
-            if (x+1 <= 4) {
-                dp[t][x] = max(dp[t][x], dp[t-1][x+1]);
-            }
+            if (x+1 <= 4) dp[t][x] = max(dp[t][x], dp[t-1][x+1]);
         }
 
         if (sunukemp.count(t)) {
-            auto[sx, sa] = sunukemp[t];
-            if (t-sx >= 0) {
+            auto[sx, sa] = sunukemp[t];  // sunukeの座標と大きさ
+            if (t-sx >= 0) {  // 時刻tの時点でsxに到達可能ならば
                 dp[t][sx] += sa;
             }
         }
