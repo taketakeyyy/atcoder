@@ -16,7 +16,7 @@ vector<ll> vy = { -1, 0, 1, 0 };
 vector<ll> vx = { 0, 1, 0, -1 };
 
 ll T;
-const ll BEAM_WIDTH = 10000;
+const ll BEAM_WIDTH = 20000;
 const ll N = 20;
 
 struct State {
@@ -32,10 +32,30 @@ bool operator< (const State &s1, const State &s2) {
     return (s1.score < s2.score);
 }
 
+/**
+ * @brief Xの中にある0の数をスコアとする
+ *
+ * @param X
+ * @return ll
+ */
 ll calc_score(vector<ll> const &X) {
     ll score = 0;
     for(ll i=1; i<(ll)X.size(); i++) {
         score += (X[i]==0)? 1:0;
+    }
+    return score;
+}
+
+/**
+ * @brief 絶対値の合計をスコアとする
+ *
+ * @param X
+ * @return ll
+ */
+ll calc_score_abssum(vector<ll> const &X) {
+    ll score = 0;
+    for(auto x: X) {
+        score += abs(x);
     }
     return score;
 }
