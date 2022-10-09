@@ -1,0 +1,2361 @@
+#define _USE_MATH_DEFINES  // M_PI等のフラグ
+#include <bits/stdc++.h>
+#define MOD 1000000007
+#define COUNTOF(array) (sizeof(array)/sizeof(array[0]))
+#define rep(i,n) for (int i = 0; i < (n); ++i)
+#define intceil(a,b) ((a+(b-1))/b)
+using namespace std;
+using ll = long long;
+using pii = pair<int,int>;
+using pll = pair<long,long>;
+const long long INF = LONG_LONG_MAX - 1001001001001001;
+void chmax(int& x, int y) { x = max(x,y); }
+void chmin(int& x, int y) { x = min(x,y); }
+string vs = "URDL";  // 上右下左
+vector<ll> vy = { -1, 0, 1, 0 };
+vector<ll> vx = { 0, 1, 0, -1 };
+ll N, M;
+// メルセンヌ・ツイスター法による疑似乱数生成器を、ハードウェア乱数をシードにして初期化
+std::random_device seed_gen;
+std::mt19937 engine(seed_gen());
+using RECT = tuple<ll,ll,ll,ll,ll,ll,ll,ll>;
+
+// タイムリミット
+const clock_t TIME_LIMIT_SOLVER = 4.5*CLOCKS_PER_SEC;
+const clock_t TIME_LIMIT_SECOND_SOLVER = 4.8*CLOCKS_PER_SEC;
+// テスト用（十分長い時間）
+// const clock_t TIME_LIMIT_SOLVER = 60*CLOCKS_PER_SEC;
+// const clock_t TIME_LIMIT_SECOND_SOLVER = 60*CLOCKS_PER_SEC;
+
+
+
+/**
+ * @brief 2022/09/20
+ * 重心から近い点をたくさん作るより、少なくても重心から遠い点を作れたほうが良さそう
+ *
+ */
+
+
+/**
+ * @brief 座標(x,y)がgrid内に収まっているか？
+ *
+ * @param x
+ * @param y
+ * @return true
+ * @return false
+ */
+bool is_inside_grid(ll x, ll y) {
+    return (0<=x && x<N && 0<=y && y<N);
+}
+
+
+/**
+ * @brief 評価関数
+ *
+ * @param grid
+ * @return ll
+ */
+ll evaluate_score(vector<vector<ll>> const &grid) {
+    ll c = (N-1)/2;
+    double s = 0;
+    double q = 0;
+    for(ll x=0; x<N; x++) {
+        for(ll y=0; y<N; y++) {
+            s += (x-c)*(x-c)+(y-c)*(y-c)+1;
+            if (grid[x][y] != 0) q += (x-c)*(x-c)+(y-c)*(y-c)+1;
+        }
+    }
+    return (ll)round((double)1e6 * ((double)(N*N)/M) * ((double)q/s));
+}
+
+struct Line {
+    public:
+        ll x1, y1;
+        ll x2, y2;
+
+        Line(ll _x1, ll _y1, ll _x2, ll _y2) {
+            if (_x1 < _x2) {
+                this->x1 = _x1; this->y1 = _y1;
+                this->x2 = _x2; this->y2 = _y2;
+            }
+            else if (_x2 < _x1) {
+                this->x1 = _x2; this->y1 = _y2;
+                this->x2 = _x1; this->y2 = _y1;
+            }
+            else {
+                if (_y1 <= _y2) {
+                    this->x1 = _x1; this->y1 = _y1;
+                    this->x2 = _x2; this->y2 = _y2;
+                }
+                else {
+                    this->x1 = _x2; this->y1 = _y2;
+                    this->x2 = _x1; this->y2 = _y1;
+                }
+            }
+        }
+
+        bool operator<(const Line &other) const {
+            if (this->x1 == other.x1) {
+                if (this->y1 == other.y1) {
+                    if (this->x2 == other.x2) {
+                        return (this->y2 < other.y2);
+                    }
+                    return (this->x2 < other.x2);
+                }
+                return (this->y1 < other.y1);
+            }
+            return (this->x1 < other.x1);
+        }
+        bool operator==(const Line &other) const {
+            return (this->x1==other.x1 && this->y1==other.y1 && this->x2==other.x2 && this->y2==other.y2);
+        }
+};
+
+
+// (x2,y2)---(tx,ty)
+//    |         |
+// (sx,sy)---(x1,y1)
+bool make_rect_A1(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++;
+            Line line(x,y,x-1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            y++;
+            Line line(x,y,x,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x1, ty=y2;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=x1, y=y1;
+        while(!(x==tx && y==ty)) {
+            y++;
+            Line line(x,y,x,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x++;
+            Line line(x,y,x-1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x1, y1, sx, sy, x2, y2};
+    return true;
+}
+
+// (tx,ty)---(x2,y2)
+//    |         |
+// (sx,sy)---(x1,y1)
+bool make_rect_A2(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++;
+            Line line(x,y,x-1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            y++;
+            Line line(x,y,x,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=sx, ty=y2;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            y++;
+            Line line(x,y,x,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x--;
+            Line line(x,y,x+1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, sx, sy, x1, y1, x2, y2};
+    return true;
+}
+
+// (x1,y1)---(x2,y2)
+//    |         |
+// (sx,sy)---(tx,ty)
+bool make_rect_A3(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            y++;
+            Line line(x,y,x,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x++;
+            Line line(x,y,x-1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x2, ty=sy;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x++;
+            Line line(x,y,x-1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            y--;
+            Line line(x,y,x,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x2, y2, x1, y1, sx, sy};
+    return true;
+}
+
+// (sx,sy)---(x1,y1)
+//    |         |
+// (x2,y2)---(tx,ty)
+bool make_rect_B1(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++;
+            Line line(x,y,x-1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            y--;
+            Line line(x,y,x,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x1, ty=y2;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=x1, y=y1;
+        while(!(x==tx && y==ty)) {
+            y--;
+            Line line(x,y,x,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x++;
+            Line line(x,y,x-1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x1, y1, sx, sy, x2, y2};
+    return true;
+}
+
+// (sx,sy)---(tx,ty)
+//    |         |
+// (x1,y1)---(x2,y2)
+bool make_rect_B2(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            y--;
+            Line line(x,y,x,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x++;
+            Line line(x,y,x-1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x2, ty=sy;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x++;
+            Line line(x,y,x-1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            y++;
+            Line line(x,y,x,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, sx, sy, x1, y1, x2, y2};
+    return true;
+}
+
+// (sx,sy)---(x1,y1)
+//    |         |
+// (tx,ty)---(x2,y2)
+bool make_rect_B3(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++;
+            Line line(x,y,x-1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            y--;
+            Line line(x,y,x,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=sx, ty=y2;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            y--;
+            Line line(x,y,x,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x--;
+            Line line(x,y,x+1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x2, y2, x1, y1, sx, sy};
+    return true;
+}
+
+// (x1,y1)---(sx,sy)
+//    |         |
+// (tx,ty)---(x2,y2)
+bool make_rect_C1(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--;
+            Line line(x,y,x+1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            y--;
+            Line line(x,y,x,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x1, ty=y2;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=x1, y=y1;
+        while(!(x==tx && y==ty)) {
+            y--;
+            Line line(x,y,x,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x--;
+            Line line(x,y,x+1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x1, y1, sx, sy, x2, y2};
+    return true;
+}
+
+// (tx,ty)---(sx,sy)
+//    |         |
+// (x2,y2)---(x1,y1)
+bool make_rect_C2(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            y--;
+            Line line(x,y,x,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x--;
+            Line line(x,y,x+1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x2, ty=sy;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x--;
+            Line line(x,y,x+1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            y++;
+            Line line(x,y,x,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x2, y2, x1, y1, sx, sy};
+    return true;
+}
+
+// (x1,y1)---(sx,sy)
+//    |         |
+// (x2,y2)---(tx,ty)
+bool make_rect_C3(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--;
+            Line line(x,y,x+1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            y--;
+            Line line(x,y,x,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x2, ty=sy;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            y--;
+            Line line(x,y,x,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x++;
+            Line line(x,y,x-1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, sx, sy, x1, y1, x2, y2};
+    return true;
+}
+
+// (tx,ty)---(x1,y1)
+//    |         |
+// (x2,y2)---(sx,sy)
+bool make_rect_D1(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            y++;
+            Line line(x,y,x,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--;
+            Line line(x,y,x+1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x2, ty=y1;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=x1, y=y1;
+        while(!(x==tx && y==ty)) {
+            x--;
+            Line line(x,y,x+1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            y++;
+            Line line(x,y,x,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x1, y1, sx, sy, x2, y2};
+    return true;
+}
+
+// (x2,y2)---(tx,ty)
+//    |         |
+// (x1,y1)---(sx,sy)
+bool make_rect_D2(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--;
+            Line line(x,y,x+1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            y++;
+            Line line(x,y,x,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=sx, ty=y2;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            y++;
+            Line line(x,y,x,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x++;
+            Line line(x,y,x-1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x2, y2, x1, y1, sx, sy};
+    return true;
+}
+
+// (x2,y2)---(x1,y1)
+//    |         |
+// (tx,ty)---(sx,sy)
+bool make_rect_D3(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            y++;
+            Line line(x,y,x,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x--;
+            Line line(x,y,x+1,y);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x2, ty=sy;
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x--;
+            Line line(x,y,x+1,y);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            y--;
+            Line line(x,y,x,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, sx, sy, x1, y1, x2, y2};
+    return true;
+}
+
+//     (x1,y1)
+//     ／    ＼
+// (sx,sy) (tx,ty)
+//     ＼    ／
+//     (x2,y2)
+bool make_rect_E1(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x2+(x1-sx), ty=y2+(y1-sy);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=x1, y=y1;
+        while(!(x==tx && y==ty)) {
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x1, y1, sx, sy, x2, y2};
+    return true;
+}
+
+//     (tx,ty)
+//     ／    ＼
+// (sx,sy) (x2,y2)
+//     ＼    ／
+//     (x1,y1)
+bool make_rect_E2(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=sx+(x2-x1), ty=sy+(y2-y1);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, sx, sy, x1, y1, x2, y2};
+    return true;
+}
+
+//     (x1,y1)
+//     ／    ＼
+// (sx,sy) (x2,y2)
+//     ＼    ／
+//     (tx,ty)
+bool make_rect_E3(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x2-(x1-sx), ty=y2-(y1-sy);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x2, y2, x1, y1, sx, sy};
+    return true;
+}
+
+//     (sx,sy)
+//     ／    ＼
+// (x1,y1) (x2,y2)
+//     ＼    ／
+//     (tx,ty)
+bool make_rect_F1(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x2-(sx-x1), ty=y2-(sy-y1);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=x1, y=y1;
+        while(!(x==tx && y==ty)) {
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x1, y1, sx, sy, x2, y2};
+    return true;
+}
+
+//     (sx,sy)
+//     ／    ＼
+// (tx,ty) (x1,y1)
+//     ＼    ／
+//     (x2,y2)
+bool make_rect_F2(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=sx-(x1-x2), ty=sy-(y1-y2);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x2, y2, x1, y1, sx, sy};
+    return true;
+}
+
+//     (sx,sy)
+//     ／    ＼
+// (x1,y1) (tx,ty)
+//     ＼    ／
+//     (x2,y2)
+bool make_rect_F3(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=sx+(x2-x1), ty=sy-(y1-y2);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, sx, sy, x1, y1, x2, y2};
+    return true;
+}
+
+//     (x1,y1)
+//     ／    ＼
+// (tx,ty) (sx,sy)
+//     ＼    ／
+//     (x2,y2)
+bool make_rect_G1(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x2-(sx-x1), ty=y1-(sy-y2);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=x1, y=y1;
+        while(!(x==tx && y==ty)) {
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x1, y1, sx, sy, x2, y2};
+    return true;
+}
+
+//     (tx,ty)
+//     ／    ＼
+// (x2,y2) (sx,sy)
+//     ＼    ／
+//     (x1,y1)
+bool make_rect_G2(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=sx-(x1-x2), ty=sy+(y2-y1);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x2, y2, x1, y1, sx, sy};
+    return true;
+}
+
+//     (x1,y1)
+//     ／    ＼
+// (x2,y2) (sx,sy)
+//     ＼    ／
+//     (tx,ty)
+bool make_rect_G3(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=sx-(x1-x2), ty=sy-(y1-y2);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, sx, sy, x1, y1, x2, y2};
+    return true;
+}
+
+//     (tx,ty)
+//     ／    ＼
+// (x1,y1) (x2,y2)
+//     ＼    ／
+//     (sx,sy)
+bool make_rect_H1(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=x2-(sx-x1), ty=y2+(y1-sy);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=x1, y=y1;
+        while(!(x==tx && y==ty)) {
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x1, y1, sx, sy, x2, y2};
+    return true;
+}
+
+//     (x2,y2)
+//     ／    ＼
+// (tx,ty) (x1,y1)
+//     ＼    ／
+//     (sx,sy)
+bool make_rect_H2(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=sx-(x1-x2), ty=sy+(y2-y1);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x--; y--;
+            Line line(x,y,x+1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, sx, sy, x1, y1, x2, y2};
+    return true;
+}
+
+//     (x2,y2)
+//     ／    ＼
+// (x1,y1) (tx,ty)
+//     ＼    ／
+//     (sx,sy)
+bool make_rect_H3(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<Line> lines;
+
+    // (x1,y1) を探す
+    ll x1, y1;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = sx, y = sy;
+        while(len <= max_len) {
+            len++;
+            x--; y++;
+            Line line(x,y,x+1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x1 = x; y1 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (x2,y2)を探す
+    ll x2, y2;
+    {
+        bool is_ok = false;
+        ll len = 1;
+        ll x = x1, y = y1;
+        while(len <= max_len) {
+            len++;
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (!is_inside_grid(x,y)) break;
+            if (line_set.count(line)) break;
+            lines.push_back(line);
+            if (grid[x][y] == 0) continue;
+            is_ok = true;
+            x2 = x; y2 = y;
+            break;
+        }
+        if (!is_ok) return false;
+    }
+
+    // (tx,ty)を探す
+    ll tx=sx+(x2-x1), ty=sy+(y2-y1);
+    if (!is_inside_grid(tx,ty)) return false;
+    {
+        ll x=sx, y=sy;
+        while(!(x==tx && y==ty)) {
+            x++; y++;
+            Line line(x,y,x-1,y-1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+    {
+        ll x=x2, y=y2;
+        while(!(x==tx && y==ty)) {
+            x++; y--;
+            Line line(x,y,x-1,y+1);
+            if (line_set.count(line)) return false;
+            lines.push_back(line);
+            if (grid[x][y] != 0) return false;
+        }
+    }
+
+    // 線を引く
+    for(auto line: lines) {
+        line_set.insert(line);
+    }
+
+    grid[tx][ty] = 2;
+    res = {tx, ty, x2, y2, x1, y1, sx, sy};
+    return true;
+}
+
+using MAKE_POINT_FUNC = bool (*)(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res);
+vector<MAKE_POINT_FUNC> make_rect_table = {
+    make_rect_A1, make_rect_A2, make_rect_A3,
+    make_rect_B1, make_rect_B2, make_rect_B3,
+    make_rect_C1, make_rect_C2, make_rect_C3,
+    make_rect_D1, make_rect_D2, make_rect_D3,
+    make_rect_E1, make_rect_E2, make_rect_E3,
+    make_rect_F1, make_rect_F2, make_rect_F3,
+    make_rect_G1, make_rect_G2, make_rect_G3,
+    make_rect_H1, make_rect_H2, make_rect_H3,
+};
+
+
+/**
+ * @brief (sx,sy)から矩形をひとつ作る。
+ * 作れなかった場合、falseを返す。
+ * 作れたらtrueを返し、resに値が入っている。
+ *
+ * @param sx
+ * @param sy
+ * @param max_len
+ * @param grid
+ * @param line_set
+ * @param res
+ * @return bool
+ */
+bool make_rect(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set, RECT &res) {
+    vector<MAKE_POINT_FUNC> table = make_rect_table;
+    shuffle(table.begin(), table.end(), engine);
+
+    for(auto func: table) {
+        bool is_ok = func(sx, sy, max_len, grid, line_set, res);
+        if (!is_ok) continue;
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief (sx, sy)から矩形を作っていく。新しく矩形を作れたら、新しく作った印の付いた点を始点として、さらに矩形を作っていく
+ *
+ * @param sx
+ * @param sy
+ * @param max_len
+ * @param grid
+ * @param line_set
+ * @return vector<RECT>
+ */
+vector<RECT> make_rect_sequence(ll sx, ll sy, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set) {
+    vector<RECT> rects;
+    ll x = sx, y = sy;
+    while(1) {
+        RECT res;
+        bool is_ok = make_rect(x, y, max_len, grid, line_set, res);
+        if (!is_ok) { break; }
+
+        rects.push_back(res);
+        tie(x, y, ignore, ignore, ignore, ignore, ignore, ignore) = res;
+    }
+    return rects;
+}
+
+/**
+ * @brief 四角を作るために探索する
+ *
+ * @param max_len
+ * @param grid
+ * @param line_set
+ * @return vector<RECT>
+ */
+vector<RECT> search(ll max_len, vector<vector<ll>> &grid, set<Line> &line_set) {
+    vector<RECT> ans;
+
+    for(ll sy=0; sy<N; sy++) {
+        for(ll sx=0; sx<N; sx++) {
+            if (grid[sx][sy] == 0) continue;
+
+            // 印の付いた点を作る
+            RECT res;
+            bool is_ok = make_rect(sx, sy, max_len, grid, line_set, res);
+            if (!is_ok) continue;
+            ans.push_back(res);
+        }
+    }
+
+    return ans;
+}
+
+/**
+ * @brief 初期解作る
+ *
+ * @param grid
+ */
+vector<RECT> initial_solver(vector<vector<ll>> &grid, set<Line> &line_set) {
+    vector<RECT> ans;
+
+    // 辺の長さをすこしずつ大きくしながら探索を繰り返す
+    ll max_len = 1;
+    while(1) {
+        auto res = search(max_len, grid, line_set);
+        if ((ll)res.size() == 0) {
+            max_len++;
+            if (max_len >= N) break;
+        }
+        for(ll i=0; i<(ll)res.size(); i++) {
+            ans.push_back(res[i]);
+        }
+    }
+
+    return ans;
+}
+
+/**
+ * @brief rects から、暫定的な良さを計算する
+ *
+ * @param rects
+ * @return ll
+ */
+ll evaluate_rects(vector<RECT> const &rects) {
+    ll score = 0;
+    ll c = (N-1)/2;
+    for(auto rect: rects) {
+        ll tx, ty;
+        tie(tx, ty, ignore, ignore, ignore, ignore, ignore, ignore) = rect;
+        score += (tx-c)*(tx-c) + (ty-c)*(ty-c) + 1;
+    }
+    return score;
+}
+
+vector<RECT> second_solver(clock_t start_clock, ll max_len, vector<vector<ll>> &grid, set<Line> &line_set) {
+    vector<RECT> ans;
+
+    // x座標とy座標はランダムで決める
+    vector<ll> xs(N);
+    vector<ll> ys(N);
+    for(ll i=0; i<N; i++) xs[i] = i;
+    for(ll i=0; i<N; i++) ys[i] = i;
+    shuffle(xs.begin(), xs.end(), engine);
+    shuffle(ys.begin(), ys.end(), engine);
+
+    const ll TRY_COUNT = 3;
+    bool do_loop = true;
+
+    while(do_loop || max_len<N) {
+        if (clock() - start_clock > TIME_LIMIT_SECOND_SOLVER) break;  // 時間切れ
+        do_loop = false;
+
+        for(auto x: xs) {
+            for(auto y: ys) {
+                if (grid[x][y] == 0) continue;
+
+                vector<RECT> best_rects;
+                ll best_score = 0;
+                vector<vector<ll>> best_grid;
+                set<Line> best_line_set;
+
+                for(ll i=0; i<TRY_COUNT; i++) {
+                    vector<vector<ll>> tmp_grid = grid;
+                    set<Line> tmp_line_set = line_set;
+
+                    auto rects = make_rect_sequence(x, y, max_len, tmp_grid, tmp_line_set);
+                    ll score = evaluate_rects(rects);
+                    if (score > best_score) {
+                        best_score = score;
+                        best_rects = rects;
+                        best_grid = tmp_grid;
+                        best_line_set = tmp_line_set;
+                    }
+                }
+
+                if ((ll)best_rects.size() != 0) {
+                    do_loop = true;
+                    for(auto rect: best_rects) ans.push_back(rect);
+                    grid = best_grid;
+                    line_set = best_line_set;
+                }
+            }
+        }
+
+        if (!do_loop) {
+            max_len = min(max_len*2, N);
+        }
+    }
+
+    return ans;
+}
+
+
+void solve() {
+    cin >> N >> M;
+    vector grid(N, vector<ll>(N, 0));  // 0:印のない格子点, 1:印のある格子点, 2: 追加した印のある格子点
+    vector<pair<ll,ll>> XY(M);
+    for(ll i=0; i<M; i++) {
+        ll x, y; cin >> x >> y;
+        XY.push_back({x,y});
+        grid[x][y] = 1;
+    }
+
+    // クロックスタート
+    clock_t start_clock = clock();
+
+    // 貪欲に初期解を作る
+    vector<RECT> best_history;
+    ll best_score = -1;
+    ll count = 0;/////////////////////////////TODO
+    // vector<ll> max_len_table = {1, N/5, N/2, N};  // N/2 とかが良さそう
+    // vector<ll> max_len_table = {N, 1};
+    vector<ll> max_len_table = {1, N/2, N/5};
+    // vector<ll> max_len_table = {N};
+
+    for(auto max_len: max_len_table) {
+        while(clock() - start_clock <= TIME_LIMIT_SOLVER) {
+            count++;
+            vector new_grid = grid;
+            set<Line> line_set;  // ((x1,y1) (x2,y2)) を結ぶ線が存在する
+            vector history = second_solver(start_clock, max_len, new_grid, line_set);
+            ll score = evaluate_score(new_grid);
+            if (score > best_score) {
+                best_history = history;
+                best_score = score;
+            }
+        }
+    }
+
+    // テスト用出力
+    // cout << "best-score: " << best_score << endl;
+    // cout << "count: " << count << endl;
+    // cout << "elapsed-time: " << (double)(clock() - start_clock)/CLOCKS_PER_SEC << endl;
+
+    // 出力
+    printf("%lld\n", (ll)best_history.size());
+    for(ll i=0; i<(ll)best_history.size(); i++) {
+        auto[x1, y1, x2, y2, x3, y3, x4, y4] = best_history[i];
+        printf("%lld %lld %lld %lld %lld %lld %lld %lld\n", x1, y1, x2, y2, x3, y3, x4, y4);
+    }
+}
+
+
+void test() {
+    set<Line> line_set;
+    Line line1(24,26,25,27);
+    Line line2(25,27,24,26);
+    line_set.insert(line1);
+    if (line_set.count(line2)) {
+        cout << "Yes" << endl;
+        line_set.insert(line2);
+    }
+    cout << "END" << endl;
+}
+
+int main() {
+    // test();
+    solve();
+    return 0;
+}
