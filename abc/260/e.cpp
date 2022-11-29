@@ -16,7 +16,7 @@ void chmin(int& x, int y) { x = min(x,y); }
 void solve() {
     ll N, M; cin >> N >> M;
     vector<ll> A(N), B(N);
-    map<ll, vector<ll>> LR;  // LR[i] := A[i]のときのB[i]
+    map<ll, vector<ll>> LR;  // LR[A[i]] := A[i]のときのB[i]
     ll r = 0;  // 右端
     ll bmin = M+1;  // Bの最小値
     for(ll i=0; i<N; i++) {
@@ -53,8 +53,46 @@ void solve() {
     cout << endl;
 }
 
+void solve2() {
+    ll N, M; cin >> N >> M;
+    vector<ll> A(N), B(N);
+    map<ll, ll> maxB;  // maxB[a] := (a,b)対の最も大きいbの値
+    ll r = 0;  // 右端
+    ll bmin = M+1;  // Bの最小値
+    for(ll i=0; i<N; i++) {
+        cin >> A[i] >> B[i];
+        maxB[A[i]] = max(maxB[A[i]], B[i]);
+        r = max(r, A[i]);
+        bmin = min(bmin, B[i]);
+    }
+
+    // いもす法でf(k)を求める
+    vector<ll> f(M+2, 0);
+    f[r] = 1; f[M+1] = -1;
+
+    // 左端をlと固定したとき、右端rの最小値を求める
+    for(ll l=2; l<=bmin; l++) {
+        // 右端更新
+        r = max(r, maxB[l-1]);
+
+        // いもす法加算処理
+        f[r-l+1] += 1;
+        f[M-l+1+1] -= 1;
+    }
+
+    // いもす法の累積和
+    for(ll i=1; i<=M+1; i++) {
+        f[i] += f[i-1];
+    }
+
+    // 出力
+    for(ll i=1; i<=M; i++) {
+        cout << f[i] << " ";
+    }
+    cout << endl;
+}
 
 int main() {
-    solve();
+    solve2();
     return 0;
 }
