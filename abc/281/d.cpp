@@ -50,7 +50,7 @@ void solve2() {
     vector<ll> A(N);
     for(ll i=0; i<N; i++) cin >> A[i];
 
-    // dp[i][j][k] := i番目までにj個選んで、総和がd(%D)であるようなときの総和の最大値
+    // dp[i][j][d] := i番目までにj個選んで、総和がd(%D)であるようなときの総和の最大値
     vector<vector<vector<ll>>> dp(N, vector<vector<ll>>(K+1, vector<ll>(D, -1)));
     for(ll i=0; i<N; i++) dp[i][0][0] = 0;
     dp[0][1][A[0]%D] = A[0];
