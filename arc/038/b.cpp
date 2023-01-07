@@ -85,12 +85,13 @@ namespace Solver1 {
 namespace Solver2 {
     vector<ll> vy = { 1, 1, 0};
     vector<ll> vx = { 0, 1, 1};
-    map<pair<ll,ll>,bool> memo; // memo[(h,w)] := 現在地が(h,w)のときの勝敗のメモ
+    map<pair<ll,ll>,bool> memo; // memo[(h,w)] := 現在地が(h,w)のときの勝敗のメモ（勝つ：true）
 
     bool is_inside(ll h, ll w) {
         return (h>=0 && h<H && w>=0 && w<W);
     }
 
+    // 現在地(h,w)が勝ち確ならtrueを返す
     bool judge(ll h, ll w) {
         if (memo.count({h,w})) return memo[{h,w}];
 
@@ -100,7 +101,7 @@ namespace Solver2 {
             ll nw = w + vx[vi];
             if (!is_inside(nh,nw)) continue;
             if (S[nh][nw] == '#') continue;
-            res |= !judge(nh, nw);  // 前の状態は勝敗が反転するが、別のルートで「負け確」から戻ってこれるなら、「勝ち確」になる
+            res |= !judge(nh, nw);  // 1手先のルートで「負け確」から戻ってこれるなら、「勝ち確」になる
         }
         return memo[{h,w}] = res;
     }
