@@ -100,8 +100,65 @@ void solve() {
     }
 }
 
+// 解説AC
+// N <= 9 * 10^{18} なので、N以下の素数を求めるためにエラトステネスの篩をしようとするとTLEする。
+// N = p^2 * q ということは、pとqの少なくとも一方はNの三乗根以下である。
+// ※ pとqの両方がNの三乗根以上だと、Nより大きくなってしまうことからも自明。
+// なので、Nの三乗根以下までの素数を調べればOK。
+
+
+
+// エラトステネスの篩で、N以下の素数の配列を返す
+vector<ll> sieve(ll n) {
+    vector<ll> primes;
+    vector<bool> is_prime(n+1, true);
+    for(ll i=2; i<=n; i++) {
+        if(!is_prime[i]) continue;
+
+        primes.push_back(i);
+        for(ll j=2*i; j<=n; j+=i) {
+            is_prime[j] = false;
+        }
+    }
+    return primes;
+}
+
+
+void solve2() {
+    ll T; cin >> T;
+    for(ll t=0; t<T; t++) {
+        ll N; cin >> N;
+
+        // Nの三乗根を求める
+        ll cbrt3N;
+        for(ll i=1; i*i*i<=N; i++) cbrt3N = i;
+        cbrt3N += 1;  // 念のため少し多めに確保
+
+        // Nの三乗根以下の素数の配列を得る
+        auto primes = sieve(cbrt3N);
+
+        // Nが素数で割り切れるなら、pとqは確定できる
+        ll p, q;
+        for(ll pm: primes) {
+            if (N%(pm*pm) == 0) {
+                p = pm;
+                q = N/(p*p);
+                break;
+            }
+            if (N%pm == 0) {
+                q = pm;
+                p = sqrt<ll>(N/q);
+                break;
+            }
+        }
+
+        cout << p << " " << q << endl;
+    }
+}
+
 
 int main() {
-    solve();
+    // solve();
+    solve2();
     return 0;
 }
