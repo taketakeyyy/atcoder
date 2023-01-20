@@ -30,8 +30,25 @@ void solve() {
     printf("%.10lf\n", ans);
 }
 
+// 「スコアの期待値が最大になるように行動する」 = 「期待値より小さい目が出たら、再度振る」
+// dp[i] := i回振れるときの期待値
+void solve2() {
+    ll N; cin >> N;
+    vector<double> dp(N+1, 0);
+    dp[1] = (double)(1+2+3+4+5+6)/6.0;
+    for(ll i=2; i<=N; i++) {
+        for(ll j=1; j<=6; j++) {  // 出目
+            if (j >= dp[i-1]) dp[i] += j;
+            else dp[i] += dp[i-1];
+        }
+        dp[i] /= 6.0;
+    }
+    printf("%.16lf\n", dp[N]);
+}
+
 
 int main() {
-    solve();
+    // solve();
+    solve2();
     return 0;
 }
