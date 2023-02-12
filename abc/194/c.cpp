@@ -13,6 +13,7 @@ void chmax(int& x, int y) { x = max(x,y); }
 void chmin(int& x, int y) { x = min(x,y); }
 
 
+// WA
 void solve() {
     ll N; cin >> N;
     vector<ll> A(N);
@@ -33,6 +34,7 @@ void solve() {
     cout << ans << endl;
 }
 
+// AC
 void solve2() {
     ll N; cin >> N;
     vector<ll> A(N);
@@ -56,8 +58,31 @@ void solve2() {
     cout << ans << endl;
 }
 
+// AC
+// A[i]の取りうる値の範囲が [-200, 200] の 401通りしかないので、
+// 各A[i]の出現回数cntAを数える
+// するとある組(a1,a2) が (a1-a2)^2 で計算される回数は、cntA[a1]*cntA[a2] 回。
+// (a1,a2)の組を2重ループで探索すればOK
+void solve3() {
+    ll N; cin >> N;
+    map<ll,ll> cntA;
+    for (int i=0; i<N; i++) {
+        ll a; cin >> a;
+        cntA[a]++;
+    }
+
+    ll ans = 0;
+    for(ll a1=-200; a1<=200; a1++) {
+        for(ll a2=a1+1; a2<=200; a2++) {
+            ans += cntA[a1]*cntA[a2]*(a1-a2)*(a1-a2);
+        }
+    }
+    cout << ans << endl;
+}
+
 int main() {
     // solve();
-    solve2();
+    // solve2();
+    solve3();
     return 0;
 }
