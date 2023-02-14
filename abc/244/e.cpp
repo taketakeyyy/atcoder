@@ -52,8 +52,41 @@ void solve() {
     cout << dp[T][K][0] << endl;
 }
 
+void solve2() {
+    ll N, M, K, S, T, X; cin >> N >> M >> K >> S >> T >> X;
+    vector<set<ll>> G(N+1);
+    for(ll i=0; i<M; i++) {
+        ll u, v; cin >> u >> v;
+        G[u].insert(v);
+        G[v].insert(u);
+    }
+
+    // dp[i][j][k] := i回移動して、頂点jに到達するときの場合の数。kはXを通った回数の偶奇。
+    vector dp(K+1, vector<vector<ll>>(N+1, vector<ll>(2, 0)));
+    dp[0][S][0] = 1;
+    for(ll i=1; i<=K; i++) { // O(K)
+        for(ll u=1; u<=N; u++) { // O(N+M)
+            for(ll v: G[u]) {
+                if (v == X) {
+                    dp[i][v][1] += dp[i-1][u][0];
+                    dp[i][v][1] %= MOD;
+                    dp[i][v][0] += dp[i-1][u][1];
+                    dp[i][v][0] %= MOD;
+                }
+                else {
+                    dp[i][v][0] += dp[i-1][u][0];
+                    dp[i][v][0] %= MOD;
+                    dp[i][v][1] += dp[i-1][u][1];
+                    dp[i][v][1] %= MOD;
+                }
+            }
+        }
+    }
+    cout << dp[K][T][0] << endl;
+}
 
 int main() {
-    solve();
+    // solve();
+    solve2();
     return 0;
 }
