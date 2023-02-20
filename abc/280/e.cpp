@@ -104,7 +104,26 @@ void solve2() {
     cout << dp[N] << endl;
 }
 
+
+// 攻撃回数の期待値 = 攻撃回数 * 確率
+void solve3() {
+    ll N, P; cin >> N >> P;
+    mint p = mint(P)/100;
+    mint q = mint(1)-p;
+
+    // dp[n] := HPがnになるときの攻撃回数の期待値
+    vector<mint> dp(N+1, 0);
+    dp[N] = 0;
+    dp[N-1] = 1;
+    for(ll n=N-2; n>=0; n--) {
+        dp[n] += (dp[n+1] + 1)*q;
+        dp[n] += (dp[n+2] + 1)*p;
+    }
+    cout << dp[0] << endl;
+}
+
 int main() {
-    solve2();
+    // solve2();
+    solve3();
     return 0;
 }
