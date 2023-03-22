@@ -7,5 +7,7 @@
 *.exe
 *.exe.stackdump
 */__pycached__/**
+**/a.out
+tmp.cpp
 
 # Don't ignore following files
