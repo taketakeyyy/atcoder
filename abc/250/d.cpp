@@ -73,8 +73,48 @@ void solve() {
     cout << ans << endl;
 }
 
+// 解説AC
+// 尺取法
+void solve2() {
+    ll N; cin >> N;
+    vector<ll> primes = sieve<ll>(1e6);
+
+    // p*q*q*q <= N となる最大のqを探す
+    ll ans = 0;
+    ll l = 0; // pのインデックス
+    ll p = primes[l];
+    ll r = 0; // qのインデックス
+    for(ll i=l+1; i<(ll)primes.size(); i++) {
+        ll q = primes[i];
+        double k = p*q*q*q; // double型は 1.7e308 まで表現可能!!!
+        if (k <= N) {
+            r = i;
+            continue;
+        }
+        break;
+    }
+    ans += r - l;
+
+    // pを素数1個分大きくすると、qはかならず減少するので、尺取法が使える
+    while(r-l > 0) {
+        l++;
+        ll p = primes[l];
+        while(r-l > 0) {
+            ll q = primes[r];
+            double k = p*q*q*q;
+            if (k <= N) {
+                ans += r - l;
+                break;
+            }
+            r--;
+        }
+    }
+    cout << ans << endl;
+}
+
 
 int main() {
     solve();
+    // solve2();
     return 0;
 }
