@@ -9,5 +9,7 @@
 */__pycached__/**
 **/a.out
 tmp.cpp
+_tmp
+_tmp/**
 
 # Don't ignore following files
