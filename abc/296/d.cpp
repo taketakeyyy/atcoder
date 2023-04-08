@@ -32,9 +32,25 @@ void solve() {
     cout << ((ans==INF)? -1 : ans) << endl;
 }
 
+void solve2() {
+    ll N, M; cin >> N >> M;
+
+    // a<=b という制約をつけて、a=1から試していく
+    ll ans = INF;
+    for(ll a=1; a<=INF; a++) {
+        ll b = (M+(a-1))/a; // 切り上げ
+        if (a > b) break;
+        if (!(1<=b && b<=N)) continue;
+        ll X = a*b;
+        if (X >= M) ans = min(ans, X);
+    }
+    cout << ((ans==INF) ? -1 : ans) << endl;
+}
+
 
 
 int main() {
-    solve();
+    // solve();
+    solve2();
     return 0;
 }
