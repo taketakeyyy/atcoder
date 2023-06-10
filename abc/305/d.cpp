@@ -30,11 +30,13 @@ void solve() {
         }
     }
 
+    // クエリ処理
     ll Q; cin >> Q;
     for(ll q=0; q<Q; q++) {
         ll l, r; cin >> l >> r;
         ll ans = 0;
 
+        // lidxを求めて、左側部分の睡眠時間を足す
         ll lidx = upper_bound(A.begin(), A.end(), l) - A.begin();
         if (lidx == N) {
             cout << 0 << endl;
@@ -44,6 +46,7 @@ void solve() {
             ans += A[lidx]-l;
         }
 
+        // ridxを求めて、右側部分の睡眠時間を足す
         ll ridx = lower_bound(A.begin(), A.end(), r) - A.begin();
         ridx--;
         if (ridx == -1) {
@@ -54,6 +57,7 @@ void solve() {
             ans += r-A[ridx];
         }
 
+        // 累積和を使って残り部分を足す
         ans += ru[ridx] - ru[lidx];
         cout << ans << endl;
     }

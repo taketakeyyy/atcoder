@@ -26,10 +26,10 @@ void solve() {
         G[b].insert(a);
     }
 
-    // プライオリティキューでコストが大きい順に処理する
-    priority_queue<pair<ll,ll>> pq;  // (コスト, 座標) 大きい順を維持する優先度付きキュー
+    // プライオリティキューで体力が大きい順に処理する
+    priority_queue<pair<ll,ll>> pq;  // (体力, 頂点) 大きい順を維持する優先度付きキュー
     set<ll> ans;
-    vector<ll> visited(N, -1); // visited[u] := 頂点uを担当する警備員のコスト
+    vector<ll> visited(N, -1); // visited[u] := 頂点uに到達したときの警備員の体力
     for(ll i=0; i<K; i++) {
         ll p, h; cin >> p >> h;
         p--;
@@ -38,19 +38,17 @@ void solve() {
         ans.insert(p);
     }
 
-    // コストが大きい順に、警備員を移動しながら処理
+    // 体力が大きい順に、警備員を移動しながら処理
     while(!pq.empty()) {
-        auto[cost, u] = pq.top(); pq.pop();
-        if (visited[u] > cost) continue;
+        auto[hp, u] = pq.top(); pq.pop();
+        if (visited[u] > hp) continue; // 頂点に書かれている体力より低い体力のとき、もう役に立たない
 
         // コスト1払って移動する
         for(ll v: G[u]) {
-            if (visited[v] >= cost-1) {
-                continue;
-            }
-            visited[v] = cost-1;
+            if (visited[v] >= hp-1) continue;
+            visited[v] = hp-1;
             ans.insert(v);
-            if (cost-1 >= 1) pq.push({cost-1, v});
+            if (hp-1 >= 1) pq.push({hp-1, v});
         }
     }
 
