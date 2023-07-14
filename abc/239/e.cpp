@@ -13,55 +13,51 @@ void chmax(int& x, int y) { x = max(x,y); }
 void chmin(int& x, int y) { x = min(x,y); }
 
 
-
-ll N, Q;
-vector<ll> X;
-vector<set<ll>> tree;
-vector<vector<ll>> pqtree;
-
-void dfs2(ll now, ll parent) {
-    for (ll v: tree[now]) {
-        if (v == parent) continue;
-        dfs2(v, now);
-        pqtree[now].insert(pqtree[now].end(), pqtree[v].begin(), pqtree[v].end());
-    }
-
-    pqtree[now].push_back(X[now]);
-    sort(pqtree[now].begin(), pqtree[now].end());
-    reverse(pqtree[now].begin(), pqtree[now].end());
-    if (pqtree[now].size() > 20) {
-        pqtree[now].resize(20);
-    }
-}
-
-
+// AC
+// Kが小さいので、各頂点を根としたときの部分木の上位20個持たせてもO(NKlog(NK))くらいでいけそう
 void solve() {
-    // Kの制約が小さいことに注目！！！
-    cin >> N >> Q;
-    X.resize(N);
-    for(ll i=0; i<N; i++) {
-        cin >> X[i];
-    }
-    tree.resize(N);
+    ll N, Q; cin >> N >> Q;
+    vector<ll> X(N);
+    for(ll i=0; i<N; i++) cin >> X[i];
+
+    // 木構造Tを作る
+    vector<vector<ll>> T(N);
     for(ll i=0; i<N-1; i++) {
         ll a, b; cin >> a >> b;
         a--; b--;
-        tree[a].insert(b);
-        tree[b].insert(a);
+        T[a].push_back(b);
+        T[b].push_back(a);
     }
 
-    pqtree.resize(N);
-    dfs2(0, -1);
+    // DFSで葉から順にranking[i]を求めていく
+    vector<vector<ll>> ranking(N); // ranking[i] := 頂点iを根とする部分木の上位20個の値を保持
+    auto dfs = [&](auto self, ll u, ll parent) -> void {
+        // 子vを探索
+        for(ll v: T[u]) {
+            if (v == parent) continue;
+            self(self, v, u);
 
-    // クエリ
-    for (ll q=0; q<Q; q++) {
+            // 子vの上位20個を貰う
+            for(ll val: ranking[v]) {
+                ranking[u].push_back(val);
+            }
+        }
+
+        // 頂点uを根とする部分木の上位20個までをソートして求める
+        ranking[u].push_back(X[u]);
+        sort(ranking[u].begin(), ranking[u].end());
+        reverse(ranking[u].begin(), ranking[u].end());
+        ranking[u].resize(20);
+    };
+    dfs(dfs, 0, -1);
+
+    //クエリ処理
+    for(ll q=0; q<Q; q++) {
         ll v, k; cin >> v >> k;
-        v--;
-        k--;
-        cout << pqtree[v][k] << endl;
+        v--; k--;
+        cout << ranking[v][k] << endl;
     }
 }
-
 
 int main() {
     solve();
