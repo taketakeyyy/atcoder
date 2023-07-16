@@ -46,8 +46,35 @@ void solve() {
     cout << ans << endl;
 }
 
+void solve2() {
+    ll N, M; cin >> N >> M;
+    vector<ll> A(N);
+    for(ll i=0; i<N; i++) cin >> A[i];
+
+    // 最初のM個の分布をとる
+    map<ll,ll> cnt;  // 各数字の分布
+    for(ll i=0; i<M; i++) cnt[A[i]]++;
+
+    // 最初のmexを求める
+    ll mex = 0;
+    while(cnt.count(mex)) mex++;
+
+    // 尺取法で分布とmexを更新しながら走査する
+    for(ll i=1; i+M-1<N; i++) {
+        cnt[A[i-1]]--;
+        cnt[A[i+M-1]]++;
+        if (cnt[A[i-1]] == 0) {
+            mex = min(mex, A[i-1]);
+        }
+    }
+
+    // 出力
+    cout << mex << endl;
+}
+
 
 int main() {
-    solve();
+    // solve();
+    solve2();
     return 0;
 }
