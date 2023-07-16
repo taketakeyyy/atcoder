@@ -64,6 +64,9 @@ struct mint {
 istream& operator>>(istream& is, mint& a) { return is >> a.x;}
 ostream& operator<<(ostream& os, const mint& a) { return os << a.x;}
 
+
+// f(i) := 現在のHPがiの状態で、終了するまでの（モンスターを倒すまでの）攻撃回数の期待値
+// メモ化再帰
 void solve() {
     ll N, P; cin >> N >> P;
     mint p = mint(P)/100;
@@ -75,6 +78,7 @@ void solve() {
     auto f = [&](auto f, ll n) -> mint {
         if (n <= 0) return 0;
         if (visited[n]) return memo[n];
+
         mint res = 1;
         res += f(f,n-2)*p;
         res += f(f,n-1)*q;
@@ -91,13 +95,13 @@ void solve2() {
     mint p = mint(P)/100;
     mint q = mint(1)-p;
 
-    // dp[i] := HPがiのモンスターを倒すまでの攻撃回数の期待値
+    // dp[n] := 現在のHPがnの状態で、終了するまでの（モンスターを倒すまでの）攻撃回数の期待値
     vector<mint> dp(N+1, mint(0));
     dp[1] = mint(1); // pでもqでも倒せる
-    for(ll i=2; i<=N; i++) {
-        dp[i] = mint(1);  // 1回攻撃したあとは、
-        dp[i] += dp[i-1]*q;  // 確率qでdp[i-1]に遷移
-        dp[i] += dp[i-2]*p;  // 確率pでdp[i-2]に遷移
+    for(ll n=2; n<=N; n++) {
+        dp[n] = mint(1);  // 1回攻撃したあとは、
+        dp[n] += dp[n-1]*q;  // 確率qでdp[i-1]に遷移
+        dp[n] += dp[n-2]*p;  // 確率pでdp[i-2]に遷移
     }
 
     // 出力
@@ -105,25 +109,8 @@ void solve2() {
 }
 
 
-// 攻撃回数の期待値 = 攻撃回数 * 確率
-void solve3() {
-    ll N, P; cin >> N >> P;
-    mint p = mint(P)/100;
-    mint q = mint(1)-p;
-
-    // dp[n] := HPがnになるときの攻撃回数の期待値
-    vector<mint> dp(N+1, 0);
-    dp[N] = 0;
-    dp[N-1] = 1;
-    for(ll n=N-2; n>=0; n--) {
-        dp[n] += (dp[n+1] + 1)*q;
-        dp[n] += (dp[n+2] + 1)*p;
-    }
-    cout << dp[0] << endl;
-}
-
 int main() {
-    // solve2();
-    solve3();
+    // solve1();
+    solve2();
     return 0;
 }
