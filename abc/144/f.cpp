@@ -262,6 +262,6 @@ void solve3() {
 int main() {
     // solve();
     // solve2();
-    // solve3();
+    solve3();
     return 0;
 }
