@@ -69,6 +69,9 @@ struct mint {
 istream& operator>>(istream& is, mint& a) { return is >> a.x;}
 ostream& operator<<(ostream& os, const mint& a) { return os << a.x;}
 
+// AC
+// a+b = a^b とは、aとbを2進数にしたとき、1が互いに重なるbit桁がないこと（0は重なってもよい）。
+// 言い換えると、a&b = 0
 void solve() {
     string L; cin >> L;
     const ll MXL = L.size();
