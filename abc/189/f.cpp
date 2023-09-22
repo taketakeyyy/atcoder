@@ -40,8 +40,8 @@ void solve() {
 
     // dp[i] := 現在iマスにいる状態で、終了するまでに回すルーレットの回数の期待値E[i]
     // 以下ではE[0] = xとおいている
-    vector<double> dpa(N+1, 0); // dpa[i] := E[i]のときのax+bのa
-    vector<double> dpb(N+1, 0); // dpb[i] := E[i]のときのax+bのb
+    vector<double> dpa(N+1, 0); // dpa[i] := E[i]のax+bのa
+    vector<double> dpb(N+1, 0); // dpb[i] := E[i]のax+bのb
     vector<double> ruia(N+2, 0); // ruia[i] := dpa[N]~dpa[i]の累積和
     vector<double> ruib(N+2, 0); // ruib[i] := dpb[N]~dpb[i]の累積和
     for(ll i=N-1; i>=0; i--) {
