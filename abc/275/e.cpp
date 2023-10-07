@@ -91,7 +91,32 @@ void solve() {
 }
 
 
+void solve2() {
+    ll N, M, K; cin >> N >> M >> K;
+    const mint p = mint(1)/mint(M); // 等確率
+
+    // dp[i][j] := i回ルーレットを回して、マスjにいる確率
+    vector<mint> dp(N+1);
+    dp[0] = 1;
+    for(ll i=0; i<K; i++) {
+        vector<mint> newdp(N+1);
+        newdp[N] = dp[N];
+        for(ll j=0; j<N; j++) { // 現在jマスにいる
+            for(ll m=1; m<=M; m++) { // ルーレットの目がm
+                ll nj = j+m; // 次のマス
+                if (nj > N) nj = N - (nj-N); // 超えたら戻る
+                newdp[nj] += dp[j]*p;
+            }
+        }
+        dp = newdp;
+    }
+
+    // 答え
+    cout << dp[N] << endl;
+}
+
 int main() {
-    solve();
+    // solve();
+    solve2();
     return 0;
 }
