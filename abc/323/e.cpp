@@ -118,8 +118,33 @@ void solve2() {
     cout << ans << endl;
 }
 
+// AC
+void solve3() {
+    ll N, X; cin >> N >> X;
+    vector<ll> T(N);
+    for(ll i=0; i<N; i++) cin >> T[i];
+
+    // dp[t] := 時刻tから曲が流れ始める確率（時刻tに曲が切り替わる確率）
+    mint ans = 0;
+    mint p = mint(1)/mint(N); // 等確率
+    vector<mint> dp(X+1, 0);
+    dp[0] = 1;
+    for(ll t=0; t<=X; t++) { // 時刻t
+        for(ll i=0; i<N; i++) { // 曲i
+            if (t+T[i] <= X) dp[t+T[i]] += dp[t]*p;
+            else {
+                if (i == 0) ans += dp[t]*p; // 曲0は時刻X+0.5に流れている
+            }
+        }
+    }
+
+    // 答え
+    cout << ans << endl;
+}
+
 int main() {
     // solve();
-    solve2();
+    // solve2();
+    solve3();
     return 0;
 }
