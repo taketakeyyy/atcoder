@@ -44,7 +44,42 @@ void solve() {
 }
 
 
+// 半分全列挙
+// 4本のダーツの和をa+b+c+dとする。
+// (a+b)と(c+d)に分割し、(a+b)で作れる点数を全列挙する。(c+d)も同様。
+// M以下で最大になる(a+b)と(c+d)の組み合わせを二分探索で探す
+void solve2() {
+    ll N, M; cin >> N >> M;
+    vector<ll> P(N);
+    for(ll i=0; i<N; i++) cin >> P[i];
+    P.push_back(0); // 0点は必ず必要
+
+    // P2 := ダーツを2本投げて作ることのできる点数の集合
+    auto genP2 = [&]() {
+        set<ll> P2;
+        for(ll i=0; i<N+1; i++) {
+            for(ll j=0; j<N+1; j++) {
+                P2.insert(P[i]+P[j]);
+            }
+        }
+        return P2;
+    };
+    auto P2 = genP2();
+
+    // 前半2本投げた点数を固定して、後半2本投げたときのM以下の最大の点数を二分探索する
+    ll ans = 0;
+    for(ll v1: P2) {
+        ll target = M-v1;
+        if (target < 0) continue;
+        auto it = P2.upper_bound(target);
+        it--;
+        ans = max(ans, v1 + (*it));
+    }
+    cout << ans << endl;
+}
+
 int main() {
-    solve();
+    // solve();
+    solve2();
     return 0;
 }
