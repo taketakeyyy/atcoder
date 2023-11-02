@@ -47,23 +47,17 @@ void solve() {
         sort(P.begin(), P.end());
         return P;
     };
-    auto P1 = genP(0, N/2);
-    auto P2 = genP(N/2, N);
+    auto P1 = genP(0, N/2); // 前半部分
+    auto P2 = genP(N/2, N); // 後半部分
 
     // 時間の総和の最大値を探す
     ll ans = 0;
     for(ll p1: P1) { // 高々2^20回
-        auto idx = lower_bound(P2.begin(), P2.end(), T-p1) - P2.begin(); // O(log|P2|)
-
-        if (P2[idx]==T-p1) {
-            ans = T;
-        }
-        else if (idx != 0) {
-            ans = max(ans, p1+P2[idx-1]);
-        }
-        else {
-            ans = max(ans, p1);
-        }
+        ll target = T-p1;
+        if(target < P2[0]) continue;
+        auto it = upper_bound(P2.begin(), P2.end(), target); // O(log|P2|)
+        it--;
+        ans = max(ans, p1 + (*it));
     }
     cout << ans << endl;
 }
