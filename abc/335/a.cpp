@@ -17,12 +17,9 @@ vector<ll> vx = { 0, 1, 0, -1 };
 
 
 void solve() {
-    ll N, M; cin >> N >> M;
-    vector<ll> A(N), B(N);
-    for(ll i=0; i<N; i++) {
-        cin >> A[i] >> B[i];
-    }
-    
+    string S; cin >> S;
+    S.at(S.size()-1) = '4';
+    cout << S << endl;
 }
 
 
