@@ -34,6 +34,7 @@ void solve() {
     vector dp(MAX_A+10,0LL);
     atcoder::segtree<S,op,e> seg(dp);
     for(ll i=0; i<N; i++) {
+        // auto oldseg = seg; // seg[a]の一点更新なので、segを使いまわしてもOK
         ll a = A[i];
         ll l = max(1LL, a-D);
         ll r = min(MAX_A, a+D);
@@ -57,13 +58,15 @@ void solve2() {
     const ll MAX_A = 500000;
     vector dp(MAX_A+10,0LL);
     for(ll i=0; i<N; i++) {
-        auto olddp = dp;
+        // auto olddp = dp; // dp[a]の一点更新なので、工夫すれば消せる
         ll a = A[i];
         ll l = max(1LL, a-D);
         ll r = min(MAX_A, a+D);
-        for(ll j=l; j<=r; j++) { // [l,r]の範囲のmaxがdp[a]の値になる -> セグ木使える
-            chmax(dp[a], olddp[j]+1);
+        ll res = dp[a];
+        for(ll j=l; j<=r; j++) { // （★）[l,r]の範囲のmaxがdp[a]の値になる -> セグ木使える
+            chmax(res, dp[j]+1);
         }
+        dp[a] = res;
     }
 
     // 答え
