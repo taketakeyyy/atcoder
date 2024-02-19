@@ -30,6 +30,7 @@ void solve() {
 
     ll now = lap*lm;
 
+    // 残りはシミュレーション
     ll n = 0;
     ll m = M;
     while(1) {
@@ -61,40 +62,34 @@ void solve() {
     }
 }
 
-// void solve2() {
-//     cpp_int N, M, K; cin >> N >> M >> K;
-//     if (N > M) swap(N,M);
+// 解説AC　二分探索
+void solve2() {
+    ll N, M, K; cin >> N >> M >> K;
+    if (N > M) swap(N,M);
 
-//     cpp_int lm = lcm(N,M);
-//     cpp_int cntN = lm/N - 1;
-//     cpp_int cntM = lm/M - 1;
-//     cpp_int cntLap = cntN + cntM; // 1周期あたりの個数
-//     cpp_int lap = (K-1)/cntLap; // 何周期目か
-//     cpp_int restK = K - lap*cntLap; // 残りのK
+    const ll LCM = lcm(N,M);
 
-//     cpp_int now = lap*lm;
+    // x以下の正整数のうち、NとMのうちちょうど一方で割り切れるものの個数がK個以上か？
+    auto f = [&](ll x) {
+        ll cntN = x/N; // Nで割り切れるものの個数
+        ll cntM = x/M; // Mで割り切れるものの個数
+        ll cntLCM = x/LCM; // NとMで割り切れるものの個数
+        ll cnt = cntN + cntM - 2*cntLCM; // NとMのどちらか一方でのみ割り切れるものの個数
+        return cnt >= K;
+    };
 
-//     cpp_int n = 0;
-//     cpp_int m = 0;
-//     while(1) {
-//         if (restK == 0) break;
-//         if (n <= m) {
-//             n += N; restK--;
-//         }
-//         else {
-//             m += M; restK--;
-//         }
-//     }
-//     if (n >= m) {
-//         cout << now+n << endl;
-//     }
-//     else {
-//         cout << now+m << endl;
-//     }
-// }
+    ll l=1, r=2e18;
+    while(r-l != 1) {
+        ll mid = (l+r)/2;
+        if (f(mid)) r = mid;
+        else l = mid;
+    }
+    if (f(l)) cout << l << endl;
+    else cout << r << endl;
+}
 
 int main() {
-    solve();
-    // solve2();
+    // solve();
+    solve2();
     return 0;
 }
