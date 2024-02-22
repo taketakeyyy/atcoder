@@ -41,7 +41,7 @@ void solve() {
 
         // dp2[w] := 頂点uがw以下の集合を作るときの、得られる操作回数の最大値
         vector<ll> dp2(W[u], 0LL);
-        for(ll v: G[u]) {
+        for(ll v: G[u]) { // 合計で高々2|E|回
             if (W[v] >= W[u]) continue;
             for(ll j=W[u]-1; j>=W[v]; j--) {
                 chmax(dp2[j], dp2[j-W[v]]+dp[v]);
