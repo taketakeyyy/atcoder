@@ -18,27 +18,32 @@ vector<ll> vx = { 0, 1, 0, -1 };
 
 void solve() {
     ll H, W, N; cin >> H >> W >> N;
-    vector<ll> R(N+1), C(N+1), A(N+1);
-    map<ll, vector<ll>> mp; // mp[a] := 値aを持つのインデックスのリスト
-    for(ll i=1; i<=N; i++) {
+    vector<ll> R(N), C(N), A(N);
+
+    map<ll, vector<ll>> mp; // mp[a] := 値aを持つインデックスのリスト
+    for(ll i=0; i<N; i++) {
         cin >> R[i] >> C[i] >> A[i];
+        R[i]--; C[i]--;
         mp[A[i]].push_back(i);
     }
 
-    vector<ll> rmax(2e5+10, 0), cmax(2e5+10, 0);
-    vector<ll> dp(N+1, 0);
+    vector<ll> rmax(H, -1); //rmax[i] := i行のマスで最も大きい移動回数
+    vector<ll> cmax(W, -1); //cmax[i] := i列のマスで最も大きい移動回数
+    vector<ll> dp(N, 0); // dp[i] := コマがマスiに置かれているときの、移動回数の最大値
     for(auto it = mp.rbegin(); it!=mp.rend(); it++) { // aの降順にdpを埋めていく
+        // dp更新
         for(auto i: it->second) {
-            dp[i] = max(rmax[R[i]], cmax[C[i]]);
+            dp[i] = max(rmax[R[i]]+1, cmax[C[i]]+1);
         }
+        // rmax,cmaxの更新
         for(auto i: it->second) {
-            rmax[R[i]] = max(rmax[R[i]], dp[i]+1);
-            cmax[C[i]] = max(cmax[C[i]], dp[i]+1);
+            rmax[R[i]] = max(rmax[R[i]], dp[i]);
+            cmax[C[i]] = max(cmax[C[i]], dp[i]);
         }
     }
 
     // 出力
-    for(ll i=1; i<=N; i++) cout << dp[i] << endl;
+    for(ll i=0; i<N; i++) cout << dp[i] << endl;
 }
 
 
