@@ -15,7 +15,8 @@ string vs = "URDL";  // 上右下左
 vector<ll> vy = { -1, 0, 1, 0 };
 vector<ll> vx = { 0, 1, 0, -1 };
 
-
+// AC
+// 集合sの部分集合tを探索するDP解法
 void solve() {
     ll N, T, M; cin >> N >> T >> M;
     vector<ll> A(M), B(M);
@@ -75,7 +76,68 @@ void solve() {
 }
 
 
+// 解説AC
+// 人を1人ずつ見ていって、「既存のチームのどれかにいれる」or「新しいチームを作る」をやっていく解法
+void solve2() {
+    ll N, T, M; cin >> N >> T >> M;
+    vector<ll> A(M), B(M);
+    for(ll i=0; i<M; i++) {
+        cin >> A[i] >> B[i];
+        A[i]--; B[i]--;
+    }
+
+    // チームは平和か？
+    auto is_peaceful_teams = [&](vector<unordered_set<ll>> const &team) -> bool {
+        for(ll t=0; t<T; t++) {
+            for(ll i=0; i<M; i++) {
+                if (team[t].contains(A[i]) and team[t].contains(B[i])) return false;
+            }
+        }
+        return true;
+    };
+
+    // すべてのチームに少なくとも一人いるか？
+    auto have_teams_people = [&](vector<unordered_set<ll>> const &team) -> bool {
+        for(ll t=0; t<T; t++) {
+            if (team[t].empty()) return false;
+        }
+        return true;
+    };
+
+    ll ans = 0;
+    auto dfs = [&](auto dfs, ll u, vector<unordered_set<ll>> &team) -> void {
+        // 終了条件
+        if (u == N) {
+            if (!have_teams_people(team)) return;
+            if (!is_peaceful_teams(team)) return;
+            ans++;
+            return;
+        }
+
+        // 既存のチームのどれかに入れる場合
+        for(ll t=0; t<T; t++) {
+            if (team[t].empty()) break;
+            team[t].insert(u);
+            dfs(dfs, u+1, team);
+            team[t].erase(u);
+        }
+
+        // 新しいチームを作る場合
+        for(ll t=0; t<T; t++) {
+            if (!team[t].empty()) continue;
+            team[t].insert(u);
+            dfs(dfs, u+1, team);
+            team[t].erase(u);
+            break;
+        }
+    };
+    vector<unordered_set<ll>> team(T);
+    dfs(dfs, 0, team);
+    cout << ans << endl;
+}
+
 int main() {
-    solve();
+    // solve();
+    solve2();
     return 0;
 }
