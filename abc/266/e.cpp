@@ -46,9 +46,21 @@ void solve2() {
     printf("%.16lf\n", dp[N]);
 }
 
+// dp[n] := 現在の残りターン数がnで、終了するまでに最適行動することで得ることができるスコアの期待値の最大値
+void solve3() {
+    ll N; cin >> N;
+    vector<double> dp(N+1);
+    dp[0] = 0;
+    for(ll n=1; n<=N; n++) {
+        double p = 1.0/6;
+        dp[n] = p*(max(1.0, dp[n-1]) + max(2.0, dp[n-1]) + max(3.0, dp[n-1]) + max(4.0, dp[n-1]) + max(5.0, dp[n-1]) + max(6.0, dp[n-1]));
+    }
+    printf("%.10f\n", dp[N]);
+}
 
 int main() {
     // solve();
-    solve2();
+    // solve2();
+    solve3();
     return 0;
 }
