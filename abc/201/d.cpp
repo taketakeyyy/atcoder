@@ -62,7 +62,65 @@ void solve() {
 }
 
 
+// 解説のNegaAlpha法 (negamaxのαカット実装）
+void solve2() {
+    ll H, W; cin >> H >> W;
+    vector A(H, vector(W, 0LL));
+    for(ll h=0; h<H; h++) {
+        string s; cin >> s;
+        for(ll w=0; w<W; w++) {
+            if (s[w]=='-') A[h][w] = -1;
+            else A[h][w] = 1;
+        }
+    }
+
+    // 移動用（右,下）
+    const vector<ll> vy = { 0, 1,};
+    const vector<ll> vx = { 1, 0,};
+
+    // マス内に収まっているか？
+    auto is_inside = [&](ll h, ll w) {
+        return (h>=0 and h<H and w>=0 and w<W);
+    };
+
+    // NegaMax法
+    // negamax(h,w) := 現在のマス(h,w)からスタートして、そのときの手番がxのとき、互いが最適に行動したときの(xのスコア - yのスコア)の最大値
+    vector memo(H, vector(W, 0LL)); // memo[i][j] := マス(i,j)のnegamaxのメモ値
+    vector visited(H, vector(W, false));
+    auto negamax = [&](auto negamax, ll h, ll w, ll alpha, ll who_turn) {
+        // 終了条件
+        if (visited[h][w]) return memo[h][w];
+        visited[h][w] = true;
+        if (h==H-1 and w==W-1) {
+            memo[h][w] = 0LL;
+            if (who_turn==1) memo[h][w] *= -1; // 相手の手番で葉ノードになったら符号反転
+            return memo[h][w];
+        }
+
+        // 次の探索
+        ll mx = -INF;
+        for(ll vi=0; vi<2; vi++) {
+            ll nh = h + vy[vi];
+            ll nw = w + vx[vi];
+            if (!is_inside(nh,nw)) continue;
+            ll new_score = A[nh][nw]-negamax(negamax, nh, nw, mx, who_turn^1);
+            mx = max(mx, new_score);
+            if (alpha-2LL >= -mx) break; // αカット（-2LLは幅を持たせている）
+        }
+
+        return memo[h][w] = mx;
+    };
+
+    // 答え
+    ll ans = negamax(negamax, 0, 0, -INF, 0);
+    if (ans == 0) cout << "Draw" << endl;
+    else if (ans > 0) cout << "Takahashi" << endl;
+    else cout << "Aoki" << endl;
+}
+
+
 int main() {
-    solve();
+    // solve();
+    solve2();
     return 0;
 }
