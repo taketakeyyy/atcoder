@@ -319,9 +319,123 @@ void solve2() {
     else cout << "Aoki" << endl;
 }
 
+// 解説AC
+// NegaMax
+void solve3() {
+    vector A(3, vector(3, 0LL));
+    for(ll i=0; i<3; i++) {
+        for(ll j=0; j<3; j++) {
+            cin >> A[i][j];
+        }
+    }
+    const ll WIN = 1;
+    const ll LOSE = -1;
+    const ll CONTINUE = 0;
+    const ll EMPTY = -1;
+
+    // 勝敗をジャッジする
+    auto judge = [&](vector<vector<ll>> const &grid, ll who_turn) {
+        {// 横方向に連続して色が塗られているか？
+            for(ll i=0; i<3; i++) {
+                ll col = grid[i][0];
+                if (col == EMPTY) continue;
+                bool is_game_over = true;
+                for(ll j=1; j<3; j++) {
+                    if (col==grid[i][j]) continue;
+                    is_game_over = false;
+                }
+                if (is_game_over) {
+                    if (col == who_turn) return WIN;
+                    else return LOSE;
+                }
+            }
+        }
+        {// 縦方向
+            for(ll j=0; j<3; j++) {
+                ll col = grid[0][j];
+                if (col == EMPTY) continue;
+                bool is_game_over = true;
+                for(ll i=1; i<3; i++) {
+                    if (col==grid[i][j]) continue;
+                    is_game_over = false;
+                }
+                if (is_game_over) {
+                    if (col == who_turn) return WIN;
+                    else return LOSE;
+                }
+            }
+        }
+        {// 斜め
+            if (grid[0][0]==grid[1][1] and grid[1][1]==grid[2][2] and grid[0][0]!=EMPTY) {
+                if (grid[0][0]==who_turn) return WIN;
+                else return LOSE;
+            }
+            if (grid[0][2]==grid[1][1] and grid[1][1]==grid[2][0] and grid[0][2]!=EMPTY) {
+                if (grid[0][2]==who_turn) return WIN;
+                else return LOSE;
+            }
+        }
+        {// すべて色塗られているか？
+            bool is_game_over = true;
+            for(ll i=0; i<3; i++) {
+                for(ll j=0; j<3; j++) {
+                    if (grid[i][j]!=EMPTY) continue;
+                    is_game_over = false;
+                }
+            }
+            if (is_game_over) {
+                // 色が塗られているところの得点が高いほうが勝ち
+                ll me = 0;
+                ll enemy = 0;
+                for(ll i=0; i<3; i++) {
+                    for(ll j=0; j<3; j++) {
+                        if (grid[i][j]==who_turn) me += A[i][j];
+                        else enemy += A[i][j];
+                    }
+                }
+                if (me > enemy) return WIN;
+                else return LOSE;
+            }
+        }
+        return CONTINUE; // 未決着（試合続行）
+    };
+
+    vector grid(3, vector(3, EMPTY)); // grid[i][j] := マス(i,j)の色（taka:0, aoki:1, empty:-1）
+    map<vector<vector<ll>>, ll> memo; // memo[S] := 盤面Sのときのスコアのメモ値
+    auto negamax = [&](auto negamax, vector<vector<ll>> &grid, ll who_turn, ll alpha) {
+        // 勝敗ジャッジ
+        if (memo.contains(grid)) return memo[grid];
+        ll jr = judge(grid, who_turn);
+        if (jr != CONTINUE) {
+            memo[grid] = jr;
+            return memo[grid];
+        }
+
+        // 次の探索
+        ll mx = -INF;
+        for(ll i=0; i<3; i++) {
+            for(ll j=0; j<3; j++) {
+                if (grid[i][j] != EMPTY) continue;
+                grid[i][j] = who_turn;
+                ll res = -negamax(negamax, grid, who_turn^1LL, mx);
+                grid[i][j] = EMPTY;
+                mx = max(mx, res);
+                if (alpha >= -mx) { // αカット
+                    return mx; // 枝狩りするときは最適値ではないのでメモしない
+                }
+            }
+        }
+        return memo[grid] = mx;
+    };
+    negamax(negamax, grid, 0, -INF);
+    if (memo[grid] == WIN) cout << "Takahashi" << endl;
+    else cout << "Aoki" << endl;
+}
+
 
 int main() {
     // solve();
-    solve2();
+    // solve2();
+    solve3();
     return 0;
 }
