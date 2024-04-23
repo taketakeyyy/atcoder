@@ -90,9 +90,9 @@ void solve2() {
     auto negamax = [&](auto negamax, ll h, ll w, ll alpha, ll who_turn) {
         // 終了条件
         if (visited[h][w]) return memo[h][w];
-        visited[h][w] = true;
         if (h==H-1 and w==W-1) {
             memo[h][w] = 0LL;
+            visited[h][w] = true;
             if (who_turn==1) memo[h][w] *= -1; // 相手の手番で葉ノードになったら符号反転
             return memo[h][w];
         }
@@ -105,10 +105,14 @@ void solve2() {
             if (!is_inside(nh,nw)) continue;
             ll new_score = A[nh][nw]-negamax(negamax, nh, nw, mx, who_turn^1);
             mx = max(mx, new_score);
-            if (alpha-2LL >= -mx) break; // αカット（-2LLは幅を持たせている）
+            if (alpha >= -mx) { // αカット
+                return mx; // 枝刈りの返り値は最適値じゃないのでメモしてはだめ
+            }
         }
 
-        return memo[h][w] = mx;
+        memo[h][w] = mx;
+        visited[h][w] = true;
+        return memo[h][w];
     };
 
     // 答え
