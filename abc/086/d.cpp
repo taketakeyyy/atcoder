@@ -6,6 +6,11 @@
 using namespace std;
 using ll = long long;
 using P = pair<int,int>;
+void chmax(ll& x, ll y) { x = max(x,y); }
+void chmin(ll& x, ll y) { x = min(x,y); }
+string vs = "URDL";  // 上右下左
+vector<ll> vy = { -1, 0, 1, 0 };
+vector<ll> vx = { 0, 1, 0, -1 };
 
 
 /* [(x1,y1), (x2,y2)]の範囲の累積和を返す */
@@ -124,8 +129,80 @@ void solve(){
     cout << ans << endl;
 }
 
+/**
+ * @brief 二次元累積和
+ * @example
+ * vector<vector<ll>> A // 二次元配列のデータ
+ * Ruiseki2D R(A);
+ * ll res = R.query({y1,x1},{y2,x2}) // [(y1,x1), (y2,x2)] の長方形の区間和を返す
+ */
+class Ruiseki2D {
+private:
+    vector<vector<ll>> mR; // 累積和
+
+public:
+    Ruiseki2D(const vector<vector<ll>> &A) {
+        ll H = A.size();
+        ll W = A[0].size();
+        mR = A;
+        // 横方向に累積和
+        for(ll i=0; i<H; i++) {
+            for(ll j=1; j<W; j++) mR[i][j] += mR[i][j-1];
+        }
+        // 縦方向に累積和
+        for(ll j=0; j<W; j++) {
+            for(ll i=1; i<H; i++) mR[i][j] += mR[i-1][j];
+        }
+    }
+
+    // [(y1,x1), (y2,x2)] の長方形の区間和を返す
+    ll query(const pair<ll,ll> &p1, const pair<ll,ll> &p2) {
+        ll y1 = p1.first; ll x1 = p1.second;
+        ll y2 = p2.first; ll x2 = p2.second;
+        if (x1-1<0 and y1-1<0) return mR[y2][x2];
+        else if (x1-1<0) return mR[y2][x2] - mR[y1-1][x2];
+        else if (y1-1<0) return mR[y2][x2] - mR[y2][x1-1];
+        return mR[y2][x2] - mR[y2][x1-1] - mR[y1-1][x2] + mR[y1-1][x1-1];
+    }
+};
+
+// 解説AC　4つ結合して累積和の条件分岐をなくして簡単に計算できるバージョン
+void solve2() {
+    ll N, K; cin >> N >> K;
+    vector A(2*K, vector(2*K, 0LL)); // A[i][j] := マス(i,j)の希望の個数
+    for(ll i=0; i<N; i++) {
+        ll x, y; char c; cin >> x >> y >> c;
+        if (c=='W') x += K; // 白を黒に変換
+
+        // 2K周期なのでmod 2Kする
+        x%=2*K; y%=2*K;
+        A[y][x]++;
+    }
+
+    // Aを4つ結合してつまり4K*4Kの盤面を作る。累積和が簡単になる
+    vector A4(4*K, vector(4*K, 0LL)); // Aを4個つなげたもの
+    for(ll i=0; i<4*K; i++) {
+        for(ll j=0; j<4*K; j++) A4[i][j] = A[i%(2*K)][j%(2*K)];
+    }
+    A.clear();// MLE対策
+
+    // 二次元累積和を作る
+    Ruiseki2D R(A4);
+
+    // 同時に叶えられる希望の個数の最大値を探す
+    ll ans = 0;
+    for(ll x=0; x<2*K; x++) {
+        for(ll y=0; y<2*K; y++) {
+            ll total = R.query({y,x}, {y+K-1, x+K-1}) + R.query({y+K, x+K}, {y+2*K-1, x+2*K-1});
+            chmax(ans, total);
+        }
+    }
+    cout << ans << endl;
+}
+
 
 int main(int argc, char const *argv[]){
-    solve();
+    // solve();
+    solve2();
     return 0;
 }
