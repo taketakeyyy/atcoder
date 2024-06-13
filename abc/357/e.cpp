@@ -20,12 +20,12 @@ vector<ll> vx = { 0, 1, 0, -1 };
  * 有向グラフに対して「お互いに行き来できる頂点を同じグループにする」ことを強連結分解（SCC）という。
  *
  * サイクルをグループ分けするイメージ。
- * 計算量O(V+E)
+ * SCC構築の計算量：O(V+E)
  *
  * @tparam T int, long long
  *
  * @param N 頂点数
- * @param G グラフG。G[i] := 頂点iに隣接している頂点集合
+ * @param G グラフG。G[u] := 頂点uから伸びる有向辺の頂点リスト
  * @example
  * Usage
  *   long long N = 4;
@@ -41,10 +41,9 @@ vector<ll> vx = { 0, 1, 0, -1 };
  *
  *   // SCC実行
  *   SCC scc = SCC<long long>(N, G);
- *   auto scc_groups = scc.scc_groups();
  *
  *   // SCCを見る
- *   scc.print_scc_groups(scc_groups);
+ *   scc.print_groups();
  *   // group0 (size: 3): 0 1 3
  *   // group1 (size: 1): 2
  */
@@ -97,20 +96,20 @@ class SCC {
 
 
     public:
+        vector<vector<T>> groups;  // 強連結成分のグループ
         vector<T> id2groupid; // 頂点番号→groupid
+
+        /**
+         * @brief SCCを作る。
+         * 計算量O(頂点数+辺数)。
+         * @return vector<vector<T>> 強連結成分のグループ
+         */
         SCC(T _N, vector<vector<T>> _G) {
             this->N = _N;
             this->G = _G;
             this->id2sccid.assign(N, -1);
             this->sccid2id.assign(N, -1);
-        }
 
-        /**
-         * @brief SCCを実行。
-         * 計算量O(頂点数+辺数)。
-         * @return vector<vector<T>> 強連結成分のグループ
-         */
-        vector<vector<T>> scc_groups() {
             // [ステップ1]
             // DFSの帰りがけ順に番号を振る
             {
@@ -126,33 +125,30 @@ class SCC {
             // （実装のコツ）SCC用の番号i=N-1から順に、「反転させた有向辺が張っているならグループ化」をDFSでやっていく
             this->fix_invG();
             vector<bool> step2_done(this->N, false);  // ステップ2で終了したSCCIDを記録する
-            vector<vector<T>> scc_groups;  // 強連結成分のグループ
             for(int i=N-1; i>=0; i--) {
                 if (step2_done[i]) continue;
                 vector<T> group;
                 dfs_step2(sccid2id[i], group, step2_done);
-                scc_groups.push_back(group);
+                groups.push_back(group);
             }
 
             // id2groupid作成
             id2groupid.assign(N, 0);
-            for(T groupid=0; groupid<(T)scc_groups.size(); groupid++) {
-                for(T u: scc_groups[groupid]) {
+            for(T groupid=0; groupid<(T)groups.size(); groupid++) {
+                for(T u: groups[groupid]) {
                     id2groupid[u] = groupid;
                 }
             }
-
-            return scc_groups;
         }
 
         /**
-         * @brief scc_groupsの中身を見る。
-         * @param scc_groups
+         * @brief groupsの中身を見る。
+         * @param groups
          * @param idx_plus 頂点番号に足す数。デフォルト0。
          */
-        void print_scc_groups(vector<vector<T>> &scc_groups, T idx_plus=0) {
-            auto itr = scc_groups.begin();
-            for(size_t i=0; i<scc_groups.size(); i++) {
+        void print_groups(T idx_plus=0) {
+            auto itr = groups.begin();
+            for(size_t i=0; i<groups.size(); i++) {
                 cout << "groupid" << i << " (size: " << (*itr).size() << "): ";
                 for(auto u: *itr) {
                     cout << u+idx_plus << " ";
@@ -165,17 +161,18 @@ class SCC {
         /**
          * @brief 強連結成分分解後のDAGの根を見つける
          * 根は複数ある場合がある
+         * 計算量 O(頂点数+辺数)
          * @return vector<T> 根のgroupidのリスト
          */
-        vector<T> find_roots(const vector<vector<T>> &scc_groups) {
-            // SCC後のDAGの根の判定は、グループ外からグループ内に有向辺が存在しないなら根
+        vector<T> find_roots() {
+            // SCC後のDAGの根の判定は、グループ外からの有向辺が存在しないなら根
             vector<T> roots; // 根のgroupidを格納
-            for(T groupid=0; groupid<(T)scc_groups.size(); groupid++) {
-                const auto &group = scc_groups[groupid];
+            for(T groupid=0; groupid<(T)groups.size(); groupid++) {
+                const auto &group = groups[groupid];
                 bool is_root = true;
                 for(T u: group) {
                     for(T v: this->invG[u]) {
-                        if (!count(group.begin(), group.end(), v)) { is_root=false; break; } // vectorのcountなので重いかも
+                        if (id2groupid[u]!=id2groupid[v]) { is_root=false; break; }
                     }
                     if (!is_root) { break; }
                 }
@@ -186,18 +183,18 @@ class SCC {
 
         /**
          * @brief 強連結成分分解後のDAGの葉を見つける
-         *
+         * 計算量 O(頂点数+辺数)
          * @return vector<T> 葉のgroupidリスト
          */
-        vector<T> find_leaves(const vector<vector<T>> &scc_groups) {
-            // SCC後のDAGの葉の判定は、グループ内からグループ外に有向辺が存在しないなら葉
+        vector<T> find_leaves() {
+            // SCC後のDAGの葉の判定は、グループ外に有向辺が存在しないなら葉
             vector<T> leaves;  // 葉のgroupid番号を格納
-            for(T groupid=0; groupid<(T)scc_groups.size(); groupid++) {
-                const auto &group = scc_groups[groupid];
+            for(T groupid=0; groupid<(T)groups.size(); groupid++) {
+                const auto &group = groups[groupid];
                 bool is_leaf = true;
                 for(T u: group) {
-                    for(T v: this->G[u]) {
-                        if (!count(group.begin(), group.end(), v)) { is_leaf = false; break; } // vectorのcountなので重いかも
+                    for(T v: this->G[u]) { // グループ外に有向辺があるなら、葉ではない
+                        if (id2groupid[u]!=id2groupid[v]) { is_leaf = false; break; }
                     }
                     if (!is_leaf) { break; }
                 }
@@ -209,11 +206,10 @@ class SCC {
         /**
          * @brief SCC後のDAGを作る
          * 計算量O(V+E)
-         * @param scc_groups
          * @return vector<vector<T>>
          */
-        vector<vector<T>> make_dag(const vector<vector<T>> &scc_groups) {
-            T GN = scc_groups.size();
+        vector<vector<T>> makeDAG() {
+            T GN = groups.size();
             vector<set<T>> dagset(GN); // 辺に重複がないようにsetで持つ
             for(T u=0; u<this->N; u++) {
                 for(T v: this->G[u]) {
@@ -232,6 +228,16 @@ class SCC {
 
             return dag;
         }
+
+        /**
+         * @brief 頂点uがどのSCCのグループに属しているかを返す
+         *
+         * @param u
+         * @return T
+         */
+        T get_groupid(T u) {
+            return id2groupid[u];
+        }
 };
 
 
@@ -247,9 +253,8 @@ void solve() {
 
     // SCCを作る
     SCC<ll> scc(N, G);
-    auto scc_groups = scc.scc_groups();
-    ll GN = scc_groups.size();
-    auto dag = scc.make_dag(scc_groups);
+    ll GN = scc.groups.size();
+    auto DAG = scc.makeDAG();
 
     // DFSで求める
     vector<ll> dp(GN, 0LL); // dp[gu] := SCCのグループguに所属する頂点の答え
@@ -258,13 +263,13 @@ void solve() {
         if (dp[gu] != 0) return;
 
         // 次の探索
-        for(ll gv: dag[gu]) {
+        for(ll gv: DAG[gu]) {
             dfs(dfs, gv);
             dp[gu] += dp[gv];
         }
 
         // 帰りがけに計算
-        dp[gu] += scc_groups[gu].size();
+        dp[gu] += scc.groups[gu].size();
     };
     for(ll groupid=0; groupid<GN; groupid++) {
         dfs(dfs, groupid);
@@ -273,7 +278,7 @@ void solve() {
     // 答え
     ll ans = 0;
     for(ll u=0; u<N; u++) {
-        ans += dp[scc.id2groupid[u]];
+        ans += dp[scc.get_groupid(u)];
     }
     cout << ans << endl;
 }
