@@ -15,67 +15,6 @@ string vs = "URDL";  // 上右下左
 vector<ll> vy = { -1, 0, 1, 0 };
 vector<ll> vx = { 0, 1, 0, -1 };
 
-/* 分数 */
-template<typename T>
-struct frac {
-    private:
-        T a;  // 分子
-        T b;  // 分母
-    public:
-        frac(T a=0, T b=1) {
-            this->a = a; this->b = b;
-            // 分母が0のときは、無限大扱いにしたい
-            if (this->b == 0) {
-                this->a = 1;
-                return;
-            }
-            // マイナスは分子につける
-            if (b < 0) { this->a=-this->a; this->b=-this->b; }
-            // 約分しておく
-            T g = gcd<T>(this->a, this->b);
-            this->a /= g;
-            this->b /= g;
-        }
-        bool operator<(const frac &other) const {
-            return this->a*other.b < other.a*this->b;
-        }
-        bool operator<=(const frac &other) const {
-            return this->a*other.b <= other.a*this->b;
-        }
-        bool operator==(const frac &other) const {
-            return (this->a == other.a) && (this->b == other.b);
-        }
-        frac operator*(const frac &other) const {
-            T na = this->a*other.a;
-            T nb = this->b*other.b;
-            return frac(na, nb);
-        }
-        frac operator/(const frac &other) const {
-            T na = this->a*other.b;
-            T nb = this->b*other.a;
-            return frac(na, nb);
-        }
-        frac operator+(const frac &other) const {
-            T l = lcm(this->b, other.b);
-            T na1 = this->a*(l/this->b);
-            T na2 = other.a*(l/other.b);
-            T na = na1 + na2;
-            T nb = l;
-            return frac(na, nb);
-        }
-        frac operator-(const frac &other) const {
-            T l = lcm(b, other.b);
-            T na1 = this->a*(l/this->b);
-            T na2 = other.a*(l/other.b);
-            T na = na1 - na2;
-            T nb = l;
-            return frac(na, nb);
-        }
-        void print() const {
-            cout << this->a << "/" << this->b << endl;
-        }
-};
-
 
 ll cross(vector<ll> &a, vector<ll> &b) {
     ll g = a[0]*b[1] - a[1]*b[0];  // 外積
@@ -141,7 +80,160 @@ void solve() {
 }
 
 
+/**
+ * @brief 3次元点
+ * @example
+ * // 点A(1,2,0)を作成
+ * Point3D<ll> A(1,2,0);
+ */
+template<typename T>
+struct Point3D {
+    T x, y, z;
+
+    bool operator<(const Point3D<T> &other) const {
+        if (this->x < other.x) return true;
+        if (this->x == other.x) {
+            if (this->y < other.y) return true;
+            if (this->y == other.y) {
+                return this->z < other.z;
+            }
+        }
+        return false;
+    }
+    bool operator>(const Point3D<T>& other) const {
+        return other < *this;
+    }
+    bool operator==(const Point3D<T> &other) const {
+        return (this->x==other.x) and (this->y==other.y) and (this->z==other.z);
+    }
+    bool operator<=(const Point3D<T>& other) const {
+        return !(*this > other);
+    }
+    bool operator>=(const Point3D<T>& other) const {
+        return !(*this < other);
+    }
+};
+/**
+ * @brief 3次元ベクトル
+ * @example
+ * // ベクトルv(1,2,0)を作成
+ * Vector3D<ll> v(1,2,0);
+ *
+ * // 点A,BからベクトルABを作成
+ * Point3D<ll> A(0,0,0);
+ * Point3D<ll> B(1,0,0);
+ * Vector3D<ll> AB(A,B);
+ *
+ * // ベクトルvとベクトルABの外積を求める
+ * Vector3D<ll> cp = v.cross(AB); // 外積
+ *
+ */
+template<typename T>
+class Vector3D {
+public:
+    T x, y, z;
+
+    Vector3D(T _x, T _y, T _z): x(_x), y(_y), z(_z) {}
+    Vector3D(const Point3D<T> &p1, const Point3D<T> &p2): x(p2.x-p1.x), y(p2.y-p1.y), z(p2.z-p1.z) {}
+
+    /**
+     * @brief ベクトルの大きさ（L2ノルム）を返す
+     *
+     * @return double
+     */
+    double magnitude() const {
+        return sqrt(this->magnitude_pow2());
+    }
+
+    /**
+     * @brief ベクトルの大きさ（L2ノルム）の2乗を返す
+     *
+     * @return T
+     */
+    T magnitude_pow2() const {
+        return x*x + y*y + z*z;
+    }
+
+    /**
+     * @brief 内積を計算する
+     *
+     * @param other
+     * @return T
+     */
+    T inner(const Vector3D &other) const {
+        return this->x*other.x + this->y*other.y + this->z*other.z;
+    }
+
+    /**
+     * @brief 外積を計算する
+     *
+     * @param other
+     * @return Vector3D
+     */
+    Vector3D cross(const Vector3D &other) const {
+        return Vector3D (
+            this->y*other.z - this->z*other.y,
+            this->z*other.x - this->x*other.z,
+            this->x*other.y - this->y*other.x
+        );
+    }
+
+    bool operator<(const Vector3D &other) const {
+        if (this->x < other.x) return true;
+        if (this->x == other.x) {
+            if (this->y < other.y) return true;
+            if (this->y == other.y) {
+                return this->z < other.z;
+            }
+        }
+        return false;
+    }
+    bool operator>(const Vector3D &other) const {
+        return other<(*this);
+    }
+    bool operator==(const Vector3D &other) const {
+        return (this->x==other.x) and (this->y==other.y) and (this->z==other.z);
+    }
+    bool operator<=(const Vector3D &other) const {
+        return !(*this > other);
+    }
+    bool operator>=(const Vector3D &other) const {
+        return !(*this < other);
+    }
+};
+
+void solve2() {
+    ll Ax, Ay; cin >> Ax >> Ay;
+    ll Bx, By; cin >> Bx >> By;
+    ll Cx, Cy; cin >> Cx >> Cy;
+    ll Dx, Dy; cin >> Dx >> Dy;
+
+    // 点を作成
+    Point3D<ll> A(Ax,Ay,0);
+    Point3D<ll> B(Bx,By,0);
+    Point3D<ll> C(Cx,Cy,0);
+    Point3D<ll> D(Dx,Dy,0);
+
+    // ベクトルABとACの外積が、z軸上向きか調べる
+    auto is_z_plus = [&](Point3D<ll> &A, Point3D<ll> &B, Point3D<ll> &C) -> bool {
+        Vector3D<ll> AB(A,B);
+        Vector3D<ll> AC(A,C);
+        auto cp = AB.cross(AC);
+        return cp.z > 0; // 内角180度未満なら凸なので、>=じゃない
+    };
+
+    // 答え
+    bool ans = true;
+    ans &= is_z_plus(A,B,C);
+    ans &= is_z_plus(B,C,D);
+    ans &= is_z_plus(C,D,A);
+    ans &= is_z_plus(D,A,B);
+    if (ans) cout << "Yes" << endl;
+    else cout << "No" << endl;
+}
+
 int main() {
-    solve();
+    // solve();
+    solve2();
     return 0;
 }
