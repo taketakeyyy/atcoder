@@ -19,8 +19,6 @@ template<typename T>
 using ordered_set = tree<T, null_type, std::less<T>, rb_tree_tag, tree_order_statistics_node_update>;
 
 
-// DPで解くならば？
-// 二分探索で解くならば？
 void solve() {
     ll T; cin >> T;
     for(ll t=0; t<T; t++) {
